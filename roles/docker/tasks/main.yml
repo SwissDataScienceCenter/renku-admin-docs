@@ -1,0 +1,40 @@
+---
+- name: Install yum-utils
+  yum:
+    name: yum-utils
+    state: latest
+    update_cache: yes
+
+- name: Add docker-ce repo
+  command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo creates=/etc/yum.repos.d/docker-ce.repo
+
+- name: Install docker-ce
+  yum:
+    name: docker-ce-18.03.1.ce
+    state: present
+
+- name: Create /etc/docker
+  file:
+    path: /etc/docker
+    state: directory
+    mode: u=rw,g=r,o=r
+
+- name: Copy docker daemon configuration
+  copy:
+    content: |
+      {
+          "storage-driver": "overlay2"
+      }
+    dest: /etc/docker/daemon.json
+    backup: yes
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+   - Restart docker
+
+- name: Enable docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes

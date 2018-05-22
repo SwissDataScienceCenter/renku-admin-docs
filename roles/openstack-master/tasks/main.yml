@@ -1,0 +1,46 @@
+---
+- name: Get cloud configuration
+  os_client_config:
+
+- name: Create OpenStack instance
+  os_server:
+    security_groups: "{{ name }}-master"
+    state: present
+    name: "{{ name }}-master"
+    image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+    boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
+    terminate_volume: "{{ lookup('env', 'MASTER_TERMINATE_VOLUME') | default('True', true) }}"
+    volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true) }}"
+    key_name: "{{ lookup('env','KEY') }}"
+    flavor: "{{ lookup('env','MASTER_FLAVOR') | default('c1.large', true) }}"
+    nics:
+    - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
+    floating_ips:
+    - "{{ lookup('env', 'MASTER_FLOATING_IP') | default(omit) }}"
+    floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
+    userdata: |
+      #cloud-config
+      package_upgrade: true
+      hostname: "{{ name }}-master"
+      manage_etc_hosts: true
+      packages:
+        - python
+        - python-simplejson
+  register: instance
+
+- name: Update inventory
+  add_host:
+    name: "{{ instance.server.name }}"
+    ansible_host: "{{ instance.server.interface_ip }}"
+    ansible_user: centos
+    groupname: master
+    internal_ip: "{{ instance.server.private_v4 }}"
+
+- name: Wait during instances boot
+  wait_for:
+    host: "{{ hostvars[groups.master[0]]['ansible_host'] }}"
+    port: 22
+    search_regex: OpenSSH
+
+- name: Allow SSH keys on first connection
+  shell: "ssh-keyscan {{ instance.server.interface_ip }} >> ~/.ssh/known_hosts"

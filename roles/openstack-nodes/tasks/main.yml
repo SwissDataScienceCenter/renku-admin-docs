@@ -1,0 +1,53 @@
+- name: Get cloud configuration
+  os_client_config:
+
+- name: Create OpenStack instance
+  os_server:
+    security_groups: "{{ name }}-nodes"
+    state: present
+    name: "{{ name }}-node-{{ item }}"
+    image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+    key_name: "{{ lookup('env','KEY') }}"
+    flavor: "{{ lookup('env','NODE_FLAVOR') | default('c1.large', true) }}"
+    nics:
+    - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
+    auto_ip: false
+    userdata: |
+      #cloud-config
+      package_upgrade: true
+      hostname: "{{ name }}-{{ item }}"
+      manage_etc_hosts: true
+      packages:
+        - python
+        - python-simplejson
+  register: "instances"
+  with_sequence: count={{ node_count }}
+
+- name: Update inventory
+  add_host:
+    name: "{{ item.server.name }}"
+    ansible_host: "{{ item.server.private_v4 }}"
+    ansible_user: centos
+    ansible_ssh_common_args: "-o ProxyCommand=\"ssh -W %h:%p -q centos@{{ hostvars[groups.master[0]]['ansible_host'] }}\""
+    groupname: nodes
+  with_items: "{{ instances.results }}"
+
+- name: Wait during nodes boot
+  wait_for:
+    host: "{{ hostvars[item]['ansible_host'] }}"
+    port: 22
+    search_regex: OpenSSH
+  with_items: "{{ groups.nodes }}"
+  delegate_to: "{{ groups.master[0] }}"
+
+- name: Scan SSH host keys
+  command: "ssh-keyscan {{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups.nodes }}"
+  register: ssh_host_keys
+  delegate_to: "{{ groups.master[0] }}"
+
+- name: Update SSH known_hosts
+  lineinfile:
+    name: ~/.ssh/known_hosts
+    line: "{{ item.stdout }}"
+  with_items: "{{ ssh_host_keys.results }}"

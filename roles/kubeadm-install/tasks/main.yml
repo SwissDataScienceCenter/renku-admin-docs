@@ -1,0 +1,80 @@
+---
+- name: Set up ip forwarding
+  sysctl:
+    name: "{{ item }}"
+    value: 1
+    state: present
+    reload: yes
+  with_items:
+  - net.bridge.bridge-nf-call-ip6tables
+  - net.bridge.bridge-nf-call-iptables
+
+- name: Add Kubernetes yum repo
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes YUM repo
+    file: kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: true
+    gpgcakey: https://packages.cloud.google.com/yum/doc/yum-key.gpg
+    gpgkey: https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: true
+    state: present
+
+- name: Set SELinux in permissive mode
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Install kubelet, kubeadm and kubectl
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - kubelet-1.10.2-0
+  - kubeadm-1.10.2-0
+  - kubectl-1.10.2-0
+  - kubernetes-cni-0.6.0-0
+
+# - name: Add hosts
+#   lineinfile:
+#     dest: /etc/hosts
+#     regexp: ".*{{ hostvars[item].ansible_hostname }}$"
+#     line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].ansible_hostname }}"
+#     state: present
+#   when: hostvars[item].ansible_hostname is defined
+#   with_items: "{{groups['all'] | default([])}}"
+
+# Fix for SWITCH DNS
+- name: Create resolv.conf for kubernetes
+  shell: grep nameserver /etc/resolv.conf > /etc/kubernetes/resolv.conf
+  args:
+    creates: /etc/kubernetes/resolv.conf
+  notify:
+  - Restart kubelet
+
+- name: Create OpenStack cloud configuration
+  template:
+    src: files/cloud-config.j2
+    dest: /etc/kubernetes/cloud-config
+    mode: 0600
+  notify:
+  - Restart kubelet
+
+- name: Override default kubeadm configuration to use the OpenStack cloud configuration
+  copy:
+    src: files/10-kubeadm.conf
+    dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    mode: 0600
+  notify:
+  - Restart kubelet
+
+- name: Reload configuration
+  systemd:
+    daemon_reload: yes
+
+- name: Enable kubelet service
+  service:
+    name: kubelet
+    state: started
+    enabled: yes

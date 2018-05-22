@@ -1,0 +1,58 @@
+---
+- name: Create master security group
+  os_security_group:
+    name: "{{ name }}-master"
+    state: present
+
+- name: Create nodes security group
+  os_security_group:
+    name: "{{ name }}-nodes"
+    state: present
+
+- name: Create balancer security group
+  os_security_group:
+    name: "{{ name }}-balancer"
+    state: present
+
+- name: Allow traffic to master from anywhere
+  with_items:
+  - 22 # ssh
+  - 6443 # kubectl
+  os_security_group_rule:
+    security_group: "{{ name }}-master"
+    protocol: tcp
+    port_range_min: "{{ item }}"
+    port_range_max: "{{ item }}"
+    remote_ip_prefix: 0.0.0.0/0
+
+- name: Allow traffic to balancer from anywhere
+  with_items:
+  - 22 # ssh
+  - 80 # http
+  - 443 # https
+  os_security_group_rule:
+    security_group: "{{ name }}-balancer"
+    protocol: tcp
+    port_range_min: "{{ item }}"
+    port_range_max: "{{ item }}"
+    remote_ip_prefix: 0.0.0.0/0
+
+- name: Allow traffic to master from nodes
+  os_security_group_rule:
+    security_group: "{{ name }}-master"
+    remote_group: "{{ name }}-nodes"
+
+- name: Allow traffic to nodes from nodes
+  os_security_group_rule:
+    security_group: "{{ name }}-nodes"
+    remote_group: "{{ name }}-nodes"
+
+- name: Allow traffic to nodes from master
+  os_security_group_rule:
+    security_group: "{{ name }}-nodes"
+    remote_group: "{{ name }}-master"
+
+- name: Allow traffic to nodes from balancer
+  os_security_group_rule:
+    security_group: "{{ name }}-nodes"
+    remote_group: "{{ name }}-balancer"

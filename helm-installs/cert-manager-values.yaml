@@ -1,0 +1,8 @@
+createCustomResource: true
+ingressShim:
+  enabled: true
+  extraArgs:
+  - --default-issuer-name=letsencrypt-prod
+  - --default-issuer-kind=ClusterIssuer
+rbac:
+  enabled: true

@@ -1,0 +1,13 @@
+controller:
+  nodeSelector:
+    ingress-node: "true"
+  kind: DaemonSet
+  service:
+    type: NodePort
+    nodePorts:
+      http: 32080
+      https: 32443
+rbac:
+  create: true
+tcp:
+  "32022": renku/renku-gitlab:22

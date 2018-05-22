@@ -1,0 +1,22 @@
+---
+- import_role:
+    name: kernel4-common
+
+- name: Wait for master to come back
+  wait_for:
+    host: "{{ hostvars[groups.master[0]].ansible_host }}"
+    port: 22
+    search_regex: OpenSSH
+    delay: 75
+    timeout: 300
+
+- name: Remove kernel 3
+  yum:
+    name: kernel-3
+    state: removed
+
+- name: Confirm kernel version
+  shell: uname -a
+  register: kernel_version
+
+- debug: var=kernel_version.stdout

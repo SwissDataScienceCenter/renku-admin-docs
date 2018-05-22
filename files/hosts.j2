@@ -1,0 +1,23 @@
+---
+all:
+  children:
+{% for group in groups %}
+{% if groups[group] and group != 'all' %}
+    {{ group }}:
+      hosts:
+{% for host in groups[group] %}
+        {{ host }}:
+          ansible_host: {{ hostvars[host].ansible_host }}
+          ansible_user: {{ hostvars[host].ansible_user }}
+{% if 'ansible_port' in hostvars[host] %}
+          ansible_port: {{ hostvars[host].ansible_port }}
+{% endif %}
+{% if 'ansible_ssh_common_args' in hostvars[host] %}
+          ansible_ssh_common_args: {{ hostvars[host].ansible_ssh_common_args }}
+{% endif %}
+{% if 'internal_ip' in hostvars[host] %}
+          internal_ip: {{ hostvars[host].internal_ip }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}

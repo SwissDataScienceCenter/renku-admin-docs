@@ -1,0 +1,5 @@
+---
+- name: kubeadm join
+  command: "kubeadm join --discovery-token-unsafe-skip-ca-verification --token {{ hostvars[groups.master[0]]['token'].stdout }} {{ hostvars[groups.master[0]].internal_ip }}:6443"
+  args:
+    creates: /etc/kubernetes/kubelet.conf

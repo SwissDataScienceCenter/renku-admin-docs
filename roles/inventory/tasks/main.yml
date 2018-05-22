@@ -1,0 +1,7 @@
+---
+- name: Update ansible inventory
+  template:
+    src: files/hosts.j2
+    dest: /tmp/hosts
+
+- command: mv /tmp/hosts hosts.yml

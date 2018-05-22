@@ -1,0 +1,112 @@
+---
+- name: Setup openstack security groups
+  hosts: localhost
+  tags:
+  - openstack
+  pre_tasks:
+  - name: Set variables
+    set_fact:
+      name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+      node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
+  roles:
+  - openstack-security-groups
+
+- name: Launch k8s master
+  hosts: localhost
+  tags:
+  - openstack
+  roles:
+  - openstack-master
+
+- name: Launch k8s nodes
+  hosts: localhost
+  tags:
+  - openstack
+  roles:
+  - openstack-nodes
+
+- name: Update inventory
+  hosts: localhost
+  tags:
+  - openstack
+  roles:
+  - inventory
+
+- name: Master preparation
+  hosts: master
+  tags:
+  - openstack
+  gather_facts: false
+  roles:
+  - openstack-common
+
+- name: Nodes preparation
+  hosts: nodes
+  tags:
+  - openstack
+  gather_facts: false
+  roles:
+  - openstack-common
+
+- name: Upgrade master to kernel 4
+  hosts: master
+  remote_user: root
+  become: yes
+  tags:
+  - kernel
+  roles:
+  - kernel4-master
+
+- name: Upgrade nodes to kernel 4
+  hosts: nodes
+  remote_user: root
+  become: yes
+  tags:
+  - kernel
+  roles:
+  - kernel4-nodes
+
+- name: Install docker
+  hosts: all
+  remote_user: root
+  become: yes
+  tags:
+  - docker
+  roles:
+  - docker
+
+- name: Install kubeadm
+  hosts: all
+  remote_user: root
+  become: true
+  tags:
+  - kubeadm-install
+  roles:
+  - kubeadm-install
+
+- name: Kubernetes master setup
+  hosts: master
+  remote_user: root
+  become: true
+  tags:
+  - kubeadm
+  roles:
+  - kubeadm-master
+
+- name: Kubernetes nodes setup
+  hosts: nodes
+  remote_user: root
+  become: true
+  tags:
+  - kubeadm
+  roles:
+  - kubeadm-nodes
+
+- name: Get kubeconfig
+  hosts: master
+  remote_user: root
+  become: true
+  tags:
+  - kubeconfig
+  roles:
+  - kubeconfig

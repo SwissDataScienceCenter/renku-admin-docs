@@ -1,0 +1,5 @@
+ansible==2.4.2.0
+shade==1.26.0
+shade-ansible==1.0.0
+python-openstackclient==3.13.0
+python-neutronclient==6.8.0

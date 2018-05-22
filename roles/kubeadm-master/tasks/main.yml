@@ -1,0 +1,103 @@
+---
+- name: Check for existing kubelet configuration
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubelet_conf
+
+- name: kubeadm token generate
+  command: kubeadm token generate
+  register: token1
+  when: kubelet_conf.stat.exists == False
+
+- name: kubeadm get existing token
+  command: sh -c "kubeadm token list | awk '/The default bootstrap token/ { print $1; }'"
+  register: token2
+  when: kubelet_conf.stat.exists == True
+
+# https://github.com/ansible/ansible/issues/4297
+- name: Retrieve token
+  set_fact:
+    token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
+
+- debug: var=token.stdout
+
+- name: kubeadm init
+  command: "kubeadm init --token {{ token.stdout }} --kubernetes-version v1.10.2 --apiserver-advertise-address {{ hostvars[groups.master[0]].internal_ip }} --apiserver-cert-extra-sans={{ hostvars[groups.master[0]].ansible_host }}"
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+
+- name: Configure kube-controller-manager cloud provider integration
+  blockinfile:
+    dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    insertbefore: 'image: '
+    marker: "# {mark} ANSIBLE MANAGED BLOCK 1"
+    block: |
+      # (For proper indentation)
+          - --cloud-provider=openstack
+          - --cloud-config=/etc/kubernetes/cloud-config
+      #    - --allocate-node-cidrs=true
+      #    - --cluster-cidr=10.96.0.0/16
+
+- name: Configure kube-controller-manager cloud provider integration
+  blockinfile:
+    dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    insertbefore: 'hostNetwork: '
+    marker: "# {mark} ANSIBLE MANAGED BLOCK 2"
+    block: |
+      # (For proper indentation)
+          - mountPath: /etc/kubernetes/cloud-config
+            name: cloud-config
+            readOnly: true
+
+- name: Configure kube-controller-manager cloud provider integration
+  blockinfile:
+    dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    insertbefore: 'status: '
+    marker: "# {mark} ANSIBLE MANAGED BLOCK 3"
+    block: |
+      # (For proper indentation)
+        - hostPath:
+            path: /etc/kubernetes/cloud-config
+            type: FileOrCreate
+          name: cloud-config
+
+- name: Ensure kubectl configuration directory is present
+  become: True
+  file:
+    path: /home/centos/.kube
+    state: directory
+    owner: centos
+    group: centos
+    mode: 0700
+
+- name: Copy kubectl configuration for the default user
+  become: True
+  copy:
+    remote_src: True
+    src: /etc/kubernetes/admin.conf
+    dest: /home/centos/.kube/config
+    owner: centos
+    group: centos
+    mode: 0600
+
+- name: Check for existing kubectl bash completion
+  stat:
+    path: /etc/bash_completion.d/kubectl
+  register: kubectl_bash_completion
+
+- name: Ensure kubectl bash_completion is present
+  command: bash -c "kubectl completion bash > /etc/bash_completion.d/kubectl" creates=/etc/bash_completion.d/kubectl
+  when: kubectl_bash_completion.stat.exists == False
+
+- name: Install pod network
+  shell: kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  register: pod_network
+
+- debug: var=pod_network.stdout_lines
+
+- name: Wait for Kube-DNS pod running
+  shell: "kubectl --kubeconfig /etc/kubernetes/admin.conf get pods --all-namespaces | grep kube-dns"
+  register: result
+  until: result.stdout.find("Running") != -1
+  retries: 30
+  delay: 10
