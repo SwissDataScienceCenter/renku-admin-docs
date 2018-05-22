@@ -58,7 +58,7 @@ We can now populate env.sh:
 
 ## B. Prepare variables
 - `source ./env.sh`
-`source ./<project>-openrc.sh`
+- `source ./<project>-openrc.sh`
 
 ## C. Run the playbook
 
