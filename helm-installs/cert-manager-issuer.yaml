@@ -6,7 +6,8 @@ metadata:
 spec:
   acme:
     server: https://acme-v01.api.letsencrypt.org/directory
-    email: admin@datascience.ch
+    # Fill in the admin email for the domain names
+    # email: 
     http01: {}
     privateKeySecretRef:
       name: letsencrypt-prod
