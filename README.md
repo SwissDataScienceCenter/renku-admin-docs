@@ -102,7 +102,7 @@ $ helm init --override 'spec.template.spec.containers[0].command'='{/tiller,--st
 Setup the nodes which will run the ingress controller:
 ```bash
 $ kubectl edit node k8s-node-1 # Set a label like `ingress-node="true"`
-$ kubectl edit node k8s-node-2 # Set a label like `ingress-node="true"`
+# one node at least, more is possible. Not sure if would help scale the network though.
 ```
 
 Install the `nginx-ingress`:
@@ -118,22 +118,19 @@ $ neutron
 # listen on port 80
 (neutron) lbaas-listener-create --name kubebalancer-http --loadbalancer kubebalancer --protocol HTTP --protocol-port 80
 (neutron) lbaas-pool-create --name kubebalancer-pool-http --lb-algorithm ROUND_ROBIN --listener kubebalancer-http --protocol HTTP
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32080 kubebalancer-pool-http # use node IPs we labelled
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.9 --protocol-port 32080 kubebalancer-pool-http
+(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32080 kubebalancer-pool-http # use node IP we labelled (k8s-node-1)
 (neutron) lbaas-healthmonitor-create --delay 5 --max-retries 2 --timeout 10 --type HTTP --url-path /healthz --pool kubebalancer-pool-http
 
 # listen on port 443
 (neutron) lbaas-listener-create --name kubebalancer-https --loadbalancer kubebalancer --protocol HTTPS --protocol-port 443
 (neutron) lbaas-pool-create --name kubebalancer-pool-https --lb-algorithm ROUND_ROBIN --listener kubebalancer-https --protocol HTTPS
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32443 kubebalancer-pool-https # use node IPs we labelled
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.9 --protocol-port 32443 kubebalancer-pool-https
+(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32443 kubebalancer-pool-https # use node IP we labelled (k8s-node-1)
 (neutron) lbaas-healthmonitor-create --delay 5 --max-retries 2 --timeout 10 --type HTTPS --url-path /healthz --pool kubebalancer-pool-https
 
 # listen on port 22 - will be used by gitlab
 (neutron) lbaas-listener-create --name kubebalancer-ssh --loadbalancer kubebalancer --protocol TCP --protocol-port 22
 (neutron) lbaas-pool-create --name kubebalancer-pool-ssh --lb-algorithm ROUND_ROBIN --listener kubebalancer-ssh --protocol TCP
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32022 kubebalancer-pool-ssh # use node IPs we labelled
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.9 --protocol-port 32022 kubebalancer-pool-ssh
+(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32022 kubebalancer-pool-ssh # use node IP we labelled (k8s-node-1)
 (neutron) lbaas-healthmonitor-create --delay 5 --max-retries 2 --timeout 10 --type TCP --pool kubebalancer-pool-ssh
 
 (neutron) lbaas-loadbalancer-show kubebalancer # Note the port id
