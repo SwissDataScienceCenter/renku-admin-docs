@@ -7,8 +7,7 @@
     host: "{{ hostvars[groups.master[0]].ansible_host }}"
     port: 22
     search_regex: OpenSSH
-    delay: 75
-    timeout: 300
+    timeout: 600
 
 - name: Remove kernel 3
   yum:

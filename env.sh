@@ -10,7 +10,6 @@ export NAME=k8s
 export IMAGE=
 
 # Network uuid (! not the subnet)
-
 export NETWORK=
 
 # Router uuid

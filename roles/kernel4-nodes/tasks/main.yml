@@ -4,12 +4,10 @@
 
 - name: Wait for nodes to come back
   wait_for:
-    host: "{{ hostvars[item].ansible_host }}"
+    host: "{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}"
     port: 22
     search_regex: OpenSSH
-    delay: 75
-    timeout: 300
-  with_items: "{{ groups.nodes }}"
+    timeout: 600
   delegate_to: "{{ groups.master[0] }}"
 
 - name: Remove kernel 3
