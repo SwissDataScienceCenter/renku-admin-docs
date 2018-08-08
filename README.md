@@ -35,6 +35,8 @@ Also, setup an SSH key pair on openstack.
 Install openstack client (from `requirements.txt`, or via `pip install python-openstackclient`) and
 neutron client `pip install python-openstackclient`.
 
+Got the error reported here: https://github.com/ansible/ansible/issues/34340 as workaround I've disabled selinux on the host running Ansible and on all targets
+
 ```bash
 $ source ./<project>-openrc.sh
 $ openstack
@@ -42,7 +44,7 @@ $ openstack
 
 ```bash
 (openstack) network create --enable --internal --description "Network for Kubernetes" kubenet
-(openstack) create --subnet-range 192.168.0.0/24 --gateway 192.168.0.254 --ip-version 4 --network kubenet kubesubnet
+(openstack) subnet create --subnet-range 192.168.0.0/24 --gateway 192.168.0.254 --ip-version 4 --network kubenet kubesubnet
 (openstack) router create --description "Router for Kubernetes" kuberouter
 (openstack) router add subnet kuberouter kubesubnet
 (openstack) router set --external-gateway public kuberouter
