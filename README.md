@@ -206,3 +206,13 @@ We can now remove that deployment:
 $ helm del --purge grafana-test
 $ kubectl delete ns test
 ```
+
+## G. Spawn Renku
+
+```
+time helm upgrade --install renku renku/renku \
+    --namespace renku \
+    --version $(cat renku-version.txt) \
+    -f renku-values.yaml \
+    --timeout 1800    
+```
