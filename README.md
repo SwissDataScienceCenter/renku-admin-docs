@@ -14,8 +14,7 @@ the work from:
 
 ## OpenStack Requirements
 
-Access to an OpenStack cluster with enough resources to spawn a handful of VMs (minimum 2), at least two available floating IPs,
-the cluster implements LBaaSv2.
+Access to an OpenStack cluster with enough resources to spawn a handful of VMs (minimum 3), 3x 100GBs and at least two available floating IPs.
 
 It is strongly recommended to use a machine user on OpenStack.
 To set this up on SWITCHengines, contact their support (see email: https://help.switch.ch/engines/).
@@ -24,6 +23,10 @@ Note: LBaaSv2 is supported on SWITCHengines -> https://cloudblog.switch.ch/2017/
 
 The last part requires the registration of a domain name.
 Without it, we cannot properly set up HTTPS entry points.
+
+As minimum resources, we propose:
+* 3x nodes (4 cores, 16GBs, 40GBs)
+* 3x PVs of 100GB (pv-renku-gitlab, pv-renku-postgresql, pv-renku-tier2)
 
 # Usage
 
@@ -36,7 +39,7 @@ Install openstack client (from `requirements.txt`, or via `pip install python-op
 neutron client `pip install python-openstackclient`.
 
 ```bash
-$ source ./<project>-openrc.sh
+$ source ./<project>-openrc.sh ## the downloaded version, as explained above
 $ openstack
 ```
 
@@ -60,17 +63,24 @@ We can now populate env.sh:
 - `source ./env.sh`
 - `source ./<project>-openrc.sh`
 
-## C. Run the playbook
+## C. Use Rancher to deploy kubernetes, tune machines
 
-The playbook may stop when the VMs have to reboot (timeout).
-In that case, simply continue or restart the playbook.
-
-```bash
-# Redo this if it fails on VM spawn/reboot
-ansible-playbook site-up.yml
-```
-
-Edit `admin.conf` to use the master node floating IP in place of something like `server: https://192.168.20.7:6443`.
+Regardless if the resources are raw metal or VMs, the procedure is quite similar;
+in the below instructions, k8s is deployed via `rancher`; however any other similar tool would work:
+* Bring up the VMs, using centos7. Inspect if they are ready:
+   * Ensure `yum upgrade ; yum upgrade kernel` and related commands have been applied and rebooted as needed
+   * Ensure kernels across VMs match each other and the output of `rpm -qa` is consistent
+   * Ensure /etc/resolv.conf does not have a `search` value, only nameservers listed
+   * NTP/DNS should be functional and correct; DO this check NOW.
+* Deploy `rancher/2.0` per its installation instructions, on your `master` node
+   * single node install is fine for now.
+   * familiarize yourself with the rancher interface
+* Add k8s cluster via `rancher`, tune `sasl` values and use for network `weave`
+   * Save in git repo your rancher yaml file, like in: `20181126-k8s-site-XYZ-prod-rancher-config.yaml`
+   * Spin up sufficient number of worker nodes for your cluster.
+* Make sure you download the k8s config file and save it as the `admin.conf` in your git repo.
+   * T.B.D: Edit `admin.conf` to use the master node floating IP in place of something like `server: https://192.168.20.7:6443`.
+* `kubectl get nodes` should return the list of nodes ; Do NOT proceed until this is working fine.
 
 ## D. Create default k8s storage class
 
@@ -108,40 +118,7 @@ $ kubectl edit node k8s-node-1 # Set a label like `ingress-node="true"`
 Install the `nginx-ingress`:
 ```bash
 $ helm upgrade nginx-ingress --namespace kube-system --install stable/nginx-ingress -f helm-installs/nginx-values.yaml
-```
-
-Make an OpenStack load balancer:
-```bash
-$ neutron
-(neutron) lbaas-loadbalancer-create --name kubebalancer kubesubnet
-
-# listen on port 80
-(neutron) lbaas-listener-create --name kubebalancer-http --loadbalancer kubebalancer --protocol HTTP --protocol-port 80
-(neutron) lbaas-pool-create --name kubebalancer-pool-http --lb-algorithm ROUND_ROBIN --listener kubebalancer-http --protocol HTTP
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32080 kubebalancer-pool-http # use node IP we labelled (k8s-node-1)
-(neutron) lbaas-healthmonitor-create --delay 5 --max-retries 2 --timeout 10 --type HTTP --url-path /healthz --pool kubebalancer-pool-http
-
-# listen on port 443
-(neutron) lbaas-listener-create --name kubebalancer-https --loadbalancer kubebalancer --protocol HTTPS --protocol-port 443
-(neutron) lbaas-pool-create --name kubebalancer-pool-https --lb-algorithm ROUND_ROBIN --listener kubebalancer-https --protocol HTTPS
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32443 kubebalancer-pool-https # use node IP we labelled (k8s-node-1)
-(neutron) lbaas-healthmonitor-create --delay 5 --max-retries 2 --timeout 10 --type HTTPS --url-path /healthz --pool kubebalancer-pool-https
-
-# listen on port 22 - will be used by gitlab
-(neutron) lbaas-listener-create --name kubebalancer-ssh --loadbalancer kubebalancer --protocol TCP --protocol-port 22
-(neutron) lbaas-pool-create --name kubebalancer-pool-ssh --lb-algorithm ROUND_ROBIN --listener kubebalancer-ssh --protocol TCP
-(neutron) lbaas-member-create --subnet kubesubnet --address 192.168.0.5 --protocol-port 32022 kubebalancer-pool-ssh # use node IP we labelled (k8s-node-1)
-(neutron) lbaas-healthmonitor-create --delay 5 --max-retries 2 --timeout 10 --type TCP --pool kubebalancer-pool-ssh
-
-(neutron) lbaas-loadbalancer-show kubebalancer # Note the port id
-```
-
-Let's make the load balancer accessible:
-```bash
-openstack
-(openstack) port set --security-group k8s-balancer <lb-port-uuid> # from field vip_port_id
-(openstack) floating ip list # look for a free floating ip
-(openstack) floating ip set --port <lb-port-uuid> <available-floating-ip>
+$ helm upgrade nginx-ingress --namespace kube-system --install stable/nginx-ingress --set controller.hostNetwork=true 
 ```
 
 Let's check we can contact the ingress:
@@ -175,12 +152,12 @@ $ curl -v http://internal.renku.ch/
 default backend - 404
 ```
 
+Open and edit `helm-installs/cert-manager-values.yaml` to fill in the `email` field.
+
 Install `cert-manager`:
 ```bash
 $ helm upgrade cert-manager --namespace kube-system --install stable/cert-manager -f helm-installs/cert-manager-values.yaml
 ```
-
-Open and edit `helm-installs/cert-manager-issuer.yaml` to fill in the `email` field.
 
 ```bash
 $ kubectl apply -f helm-installs/cert-manager-issuer.yaml
@@ -207,12 +184,83 @@ $ helm del --purge grafana-test
 $ kubectl delete ns test
 ```
 
-## G. Spawn Renku
+## G. Deploy cert-manager
 
+To prevent a potential failure, ensure that the contents of the file `cert-manager-values.yaml` has as follows:
 ```
-time helm upgrade --install renku renku/renku \
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Fill in the admin email for the domain names
+    email: your.email@yourdomain.example.com
+    http01: {}
+    privateKeySecretRef:
+      name: letsencrypt-prod
+```
+
+It appears that recent cert-manager versions require a trick to get deployed, due to upstream changes:
+```bash
+$ kubectl apply -f manifests/cert-manager-issuer.yaml
+$ helm upgrade --version 0.4.1 --install cert-manager stable/cert-manager -f helm-installs/cert-manager-values.yaml --namespace kube-system
+$ helm upgrade --install cert-manager stable/cert-manager -f helm-installs/cert-manager-values.yaml --namespace kube-system
+``` 
+
+## H. Setup the PVs & PVCs
+
+```bash
+$ ## kubectl apply -f manifests/storage-class.yml ## This is redundant if you have done step D. above.
+$ kubectl apply -f renku-pv.yaml
+$ kubectl create ns renku
+$ kubectl -n renku apply -f renku-pvc.yaml
+$ kubectl get pv
+$ kubectl get pvc -n renku
+$ kubectl describe persistentvolumeclaim -n renku  ## this should not show any error, just PVs ready to be used
+```
+
+So, `kubectl describe pvc -n renku` should not give any fault; Do NOT proceed until this is working fine.
+
+## I. Edit file renku-values.yaml
+
+Ensure that inside file `renku-values.yaml` the following are being taken care of:
+* `variables_switchboard` section has URLs and DNS names that correspond to your configuration
+* `credentials` has its values populated via command `openssl rand -hex 32`, noting that:
+   * Use value from `global_jupyterhub_postgresPassword`:  to populate `nb_jupyterhub_hub_db_url`, between `-` and `@` 
+   * use `uuidgen` (i.e. a random UUID) for poulating `global_gateway_clientSecret`
+*  if you face later on pod scheduling problems (f.i. not enough mem) you may wish to tone down `resources.requests.memory`
+* `lfsObjects` & `registry` require to setup your S3 back-ends, so have that configuration handy and in place
+
+## J. Spawn Renku
+
+For convenience, you might wish to monitor the below activity via `watch -d kubectl get po --all-namespaces` (hint: ctrl-Z)
+
+```bash
+$ helm init
+$ helm repo add renku https://swissdatasciencecenter.github.io/helm-charts/
+$ helm fetch --devel renku/renku ## t.b.d.
+$ time helm upgrade --install renku renku/renku \
     --namespace renku \
     --version $(cat renku-version.txt) \
     -f renku-values.yaml \
     --timeout 1800    
 ```
+
+## K. Basic functionality checks
+
+* Create an account via keycloak (/auth), set a password
+* Login with said account and verify:
+   * You can setup a project (add both title & decsription) ; star it for convenience
+   * You can spin up a notebook server and launch a notebook or a terminal
+   * You can visit said project under gitlab and kick a pipeline ; if latter fails, some work is missing with `gitlab-runner`
+* You should be ready to follow "First Steps" from Renku documentation => Let's do it.
+
+## L. Customizations
+
+You could now consider tuning the following:
+* You could now enable 2FA authentication, google recaptcha, login themes etc; see keycloak instructions about these
+* You could setup logging & monitoring - via rancher or without ; we are actively checking solutions in this space
+* You could attempt integration with nearby resources (HPC sites, other cloud resources, your telescopes etc)
