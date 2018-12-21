@@ -127,7 +127,7 @@ $ curl -v http://<floating-ip>/
 default backend - 404
 ```
 
-## F. DNS and HTTPS setup
+## F. DNS setup
 
 Get a domain name, e.g. `renku.ch` from a registrar.
 
@@ -152,16 +152,35 @@ $ curl -v http://internal.renku.ch/
 default backend - 404
 ```
 
+## G. Deploy cert-manager, to support https
+
+N.B. This will rely on `Let's Encrypt` being able to refresh SSL certificates, automatically.
+
 Open and edit `manifests/cert-manager-issuer.yaml` to fill in the `email` field.
 
-Install `cert-manager`:
-```bash
-$ helm upgrade cert-manager --namespace kube-system --install stable/cert-manager -f helm-installs/cert-manager-values.yaml
+To prevent a potential failure, ensure that the contents of the file `cert-manager-issuer.yaml` have as follows:
+```
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Fill in the admin email for the domain names
+    email: your.email@yourdomain.example.com
+    http01: {}
+    privateKeySecretRef:
+      name: letsencrypt-prod
 ```
 
+It appears that recent cert-manager versions require a trick to get deployed, due to upstream changes, so here's a workaround:
 ```bash
+$ helm install --version 0.4.1 --name cert-manager stable/cert-manager -f helm-installs/cert-manager-values.yaml --namespace kube-system
+$ helm upgrade --install cert-manager stable/cert-manager -f helm-installs/cert-manager-values.yaml --namespace kube-system
 $ kubectl apply -f manifests/cert-manager-issuer.yaml
-```
+``` 
 
 Check that we can issue certificates automatically, by installing grafana:
 ```bash
@@ -183,32 +202,6 @@ We can now remove that deployment:
 $ helm del --purge grafana-test
 $ kubectl delete ns test
 ```
-
-## G. Deploy cert-manager
-
-To prevent a potential failure, ensure that the contents of the file `cert-manager-values.yaml` has as follows:
-```
----
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    # Fill in the admin email for the domain names
-    email: your.email@yourdomain.example.com
-    http01: {}
-    privateKeySecretRef:
-      name: letsencrypt-prod
-```
-
-It appears that recent cert-manager versions require a trick to get deployed, due to upstream changes:
-```bash
-$ kubectl apply -f manifests/cert-manager-issuer.yaml
-$ helm upgrade --version 0.4.1 --install cert-manager stable/cert-manager -f helm-installs/cert-manager-values.yaml --namespace kube-system
-$ helm upgrade --install cert-manager stable/cert-manager -f helm-installs/cert-manager-values.yaml --namespace kube-system
-``` 
 
 ## H. Setup the PVs & PVCs
 
