@@ -1,0 +1,319 @@
+## Configuration file for deploying the renku chart at http://renku.mydomain.ch
+---
+variables_switchboard:
+  mainURL:       &mainURL renku.mydomain.ch
+  baseURL:       &baseURL https://renku.mydomain.ch
+  registryURL:   &registryURL https://registry.renku.mydomain.ch ## drop `registry.` if using same endpoint for gitlab
+  registryName:  &registryName registry.renku.mydomain.ch        ## drop `registry.` if using same endpoint for gitlab
+  gitlabURL:     &gitlabURL https://renku.mydomain.ch/gitlab
+  jupyterhubURL: &jupyterhubURL https://renku.mydomain.ch/jupyterhub
+  gatewayURL:    &gatewayURL https://renku.mydomain.ch/api
+  oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
+
+credentials:
+  pass101: &global_gitlab_clientSecret                      ## ReplaceMeWithA64CharString
+  pass102: &global_gitlab_postgresPassword                  ## ReplaceMeWithA32CharString
+  pass103: &global_gitlab_sudoToken                         ## ReplaceMeWithA64CharString
+  pass104: &global_keycloak_postgresPassword                ## ReplaceMeWithA32CharString
+  pass105: &global_jupyterhub_postgresPassword              ## ReplaceMeWithA32CharString
+  pass106: &nb_jupyterhub_hub_db_url                        ## postgres+psycopg2://jupyterhub:<<ReplaceMeWithValueAbove>>@renku-postgresql:5432/jupyterhub
+  pass107: &global_gateway_clientSecret                     ## ReplaceMeWithaUUID , `uuidgen`
+  pass108: &global_gateway_gitlabClientSecret               ## ReplaceMeWithA64CharString
+  pass201: &gitlab_password                                 ## ReplaceMeWithA32CharString
+  pass202: &gitlab_sharedRunnersRegistrationToken           ## ReplaceMeWithA64CharString
+  pass301: &keycloak_password                               ## ReplaceMeWithA32CharString
+  pass401: &postgresql_postgresPassword                     ## ReplaceMeWithA64CharString
+  pass501: &nb_jupyterhub_hub_cookieSecret                  ## ReplaceMeWithA64CharString
+  pass502: &nb_jupyterhub_hub_services_notebooks_apiToken   ## ReplaceMeWithA64CharString
+  pass503: &nb_jupyterhub_hub_services_gateway_apiToken     ## ReplaceMeWithA64CharString
+  pass504: &nb_jupyterhub_proxy_secretToken                 ## ReplaceMeWithA64CharString
+  pass505: &nb_jupyterhub_auth_state_cryptoKey              ## ReplaceMeWithA64CharString
+  pass506: &nb_jupyterhub_auth_gitlab_clientSecret          ## ReplaceMeWithA64CharString
+  pass601: &gateway_secretKey                               ## ReplaceMeWithA64CharString
+
+defaultResources: &defaultResources
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 200m
+    memory: 512Mi
+
+global:
+  gitlab:
+    clientSecret: *global_gitlab_clientSecret
+    postgresDatabase: gitlabhq_production
+    postgresUser: gitlab
+    postgresPassword: *global_gitlab_postgresPassword
+    urlPrefix: /gitlab
+    sudoToken: *global_gitlab_sudoToken
+  keycloak:
+    postgresDatabase: keycloak
+    postgresUser: keycloak
+    postgresPassword: *global_keycloak_postgresPassword
+  jupyterhub:
+    postgresDatabase: jupyterhub
+    postgresUser: jupyterhub
+    postgresPassword: *global_jupyterhub_postgresPassword
+  gateway:
+    clientSecret: *global_gateway_clientSecret
+    gitlabClientSecret: *global_gateway_gitlabClientSecret
+  renku:
+    domain: *mainURL
+  useHTTPS: true
+
+gitlab:
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+    repository: gitlab/gitlab-ce
+    tag: 11.5.4-ce.0
+  password: *gitlab_password
+  ssh:
+    externalPort: 22
+    nodePortService:
+      enabled: true
+      nodePort: 32022
+  persistence:
+    existingClaim: renku-gitlab
+  lfsObjects:
+    enabled: true
+    bucketName: lfs-objects
+    connection: |-
+      {
+        'provider' => 'OpenStack',
+        'openstack_auth_url' => 'https://keystone.--:5000/v3/auth/tokens',
+        'openstack_username' => '-',
+        'openstack_api_key' => '--',
+        'openstack_domain_name' => 'Default',
+        'openstack_project_id' => '-',
+        'openstack_region' => '-',
+        'openstack_temp_url_key' => '-'
+      }
+  registry:
+    enabled: true
+    externalUrl: *registryURL
+    backendHealthcheck: false
+    storage: |-
+      {
+        'swift' => {
+          'authurl' => 'https://keystone.--:5000/v3',
+          'username' => '-',
+          'password' => '--',
+          'region' => '-',
+          'container' => 'registry',
+          'tenantid' => '-',
+          'domain' => '-'
+        }
+      }
+    exposedAs: Ingress
+    ingress:
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        kubernetes.io/tls-acme: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: '0' # Adjust to a reasonable value for production to avoid DOS attacks.
+        nginx.ingress.kubernetes.io/proxy-request-buffering: 'off' # Needed if GitLab is behind this ingress
+      hosts:
+      - *registryName
+      tls:
+      - hosts:
+        - *registryName
+        secretName: registry-renku_mydomain_ch-io-tls
+  resources:
+    requests:
+      cpu: 1500m
+      memory: 10Gi
+    limits:
+      cpu: 1500m
+      memory: 10Gi
+  redis:
+    master:
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+  sharedRunnersRegistrationToken: *gitlab_sharedRunnersRegistrationToken
+
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: '0' # Adjust to a reasonable value for production to avoid DOS attacks.
+    nginx.ingress.kubernetes.io/proxy-request-buffering: 'off' # Needed if GitLab is behind this ingress
+  enabled: true
+  hosts:
+  - *mainURL
+  tls:
+  - hosts:
+    - *mainURL
+    secretName: renku_mydomain_ch-io-tls
+
+keycloak:
+  enabled: true
+  keycloak:
+    username: admin
+    password: *keycloak_password
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+postgresql:
+  postgresPassword: *postgresql_postgresPassword
+  persistence:
+    existingClaim: renku-postgresql
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+ui:
+  ingress:
+    enabled: false
+  baseUrl: *baseURL
+  gitlabUrl: *gitlabURL
+  jupyterhubUrl: *jupyterhubURL
+  gatewayUrl: *gatewayURL
+  welcomePage:
+    text: |
+      ## First Time
+
+      If you are here for your first time, we recommend you go through our
+      [tutorial](https://renku.readthedocs.io/en/latest/user/firststeps.html).
+      
+      ## Dec. 25th Upgrade to Renku 0.3.0
+      
+      We have upgraded Renku - this version brings many improvements, mainly in the 
+      backends and the CLI, but also in the stability and usability of the UI. 
+
+      Please see the "Breaking Changes" section of the [Release notes](https://github.com/SwissDataScienceCenter/renku/releases/tag/0.3.0)
+      to see what has changed and how to upgrade your projects. 
+      
+      ## Help
+
+      If you need help, you can reach out to us via
+      [Gitter](https://gitter.im/SwissDataScienceCenter/renku ) or the issue
+      tracker in our [GitHub repository](https://github.com/SwissDataScienceCenter/renku).
+      You can also browse the [general Renku documentation](https://renku.readthedocs.org) 
+      as well as the [command-line interface docs](https://renku-python.readthedocs.org).
+
+      ## renku.mydomain.ch
+
+      Renku is under active development. We encourage you to have a look around,
+      and we are doing our best to keep it stable, but please be aware that changes
+      may be made without prior warning and could lead to service interruptions.
+
+      We also kindly request that you do not upload datasets larger than 1GB for
+      the time being. In the future, we will remove this restriction.
+
+  resources:
+    <<: *defaultResources
+
+notebooks:
+  serverOptions:
+    cpu_request:
+      default: 0.1
+      options: [0.1, 0.5, 1.0, 2.0, 4.0]
+    mem_request:
+      default: 1G
+      options: [1G, 2G, 4G]
+    gpu_request:
+      default: 0
+      range: [0, 0] ## upgrade second value to number of GPUs per node
+    defaultUrl:
+      default: /lab
+      options: [/lab]
+    lfs_auto_fetch:
+      default: false
+  gitlab:
+    ## specify the GitLab instance URL
+    url: *gitlabURL
+    registry:
+      ## Set the default image registry
+      host: *registryName
+      ## Set the registry secret key
+      secret: renku-notebooks-registry
+  resources: 
+    <<: *defaultResources
+  jupyterhub:
+    rbac:
+      enabled: true
+    hub:
+      cookieSecret: *nb_jupyterhub_hub_cookieSecret
+      baseUrl: '/jupyterhub/'
+      extraEnv:
+        GITLAB_URL: *gitlabURL
+        IMAGE_REGISTRY: *registryName
+      db:
+        type: postgres
+        url: *nb_jupyterhub_hub_db_url
+      services:
+        notebooks:
+          apiToken: *nb_jupyterhub_hub_services_notebooks_apiToken
+        gateway:
+          admin: true
+          oauth_client_id: &gatewayClient gateway
+          apiToken: *nb_jupyterhub_hub_services_gateway_apiToken
+          oauth_redirect_uri: *oauth_redirect_uri
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /jupyterhub/hub/metrics
+      resources:
+        requests:
+          cpu: 200m
+          memory: 1Gi
+        limits:
+          cpu: 200m
+          memory: 1Gi
+    proxy:
+      secretToken: *nb_jupyterhub_proxy_secretToken
+      chp:
+        resources: 
+          <<: *defaultResources
+    auth:
+      state:
+        enabled: true
+        cryptoKey: *nb_jupyterhub_auth_state_cryptoKey
+      gitlab:
+        clientSecret: *nb_jupyterhub_auth_gitlab_clientSecret
+
+gateway:
+  jupyterhub:
+    clientId: *gatewayClient
+    clientSecret: *nb_jupyterhub_hub_services_gateway_apiToken
+  secretKey: *gateway_secretKey
+  resources: 
+    <<: *defaultResources
+  redis:
+    master:
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+tests:
+  ## User accounts for running `helm test`
+  ## Replace passwords with random strings in a production setup
+  users_json:
+   - username: bwayne
+     firstName: Bruce
+     lastName: Wayne
+     email: bwayne@example.com
+     password: ## ReplaceMewithA32charString
+   - username: ckent
+     firstName: Clark
+     lastName: Kent
+     email: ckent@example.com
+     password: ## ReplaceMewithA32charString
