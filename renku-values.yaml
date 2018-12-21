@@ -1,13 +1,13 @@
 ## Configuration file for deploying the renku chart at http://renku.mydomain.ch
 ---
 variables_switchboard:
-  mainURL:       &mainURL renku.mydomain.ch
-  baseURL:       &baseURL https://renku.mydomain.ch
-  registryURL:   &registryURL https://registry.renku.mydomain.ch ## drop `registry.` if using same endpoint for gitlab
-  registryName:  &registryName registry.renku.mydomain.ch        ## drop `registry.` if using same endpoint for gitlab
-  gitlabURL:     &gitlabURL https://renku.mydomain.ch/gitlab
+  mainURL:       &mainURL       renku.mydomain.ch
+  baseURL:       &baseURL       https://renku.mydomain.ch
+  registryURL:   &registryURL   https://registry.renku.mydomain.ch ## drop `registry.` if using same endpoint for gitlab
+  registryName:  &registryName  registry.renku.mydomain.ch         ## drop `registry.` if using same endpoint for gitlab
+  gitlabURL:     &gitlabURL     https://renku.mydomain.ch/gitlab
   jupyterhubURL: &jupyterhubURL https://renku.mydomain.ch/jupyterhub
-  gatewayURL:    &gatewayURL https://renku.mydomain.ch/api
+  gatewayURL:    &gatewayURL    https://renku.mydomain.ch/api
   oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
 
 credentials:
