@@ -152,7 +152,7 @@ $ curl -v http://internal.renku.ch/
 default backend - 404
 ```
 
-Open and edit `helm-installs/cert-manager-values.yaml` to fill in the `email` field.
+Open and edit `manifests/cert-manager-issuer.yaml` to fill in the `email` field.
 
 Install `cert-manager`:
 ```bash
@@ -160,7 +160,7 @@ $ helm upgrade cert-manager --namespace kube-system --install stable/cert-manage
 ```
 
 ```bash
-$ kubectl apply -f helm-installs/cert-manager-issuer.yaml
+$ kubectl apply -f manifests/cert-manager-issuer.yaml
 ```
 
 Check that we can issue certificates automatically, by installing grafana:
