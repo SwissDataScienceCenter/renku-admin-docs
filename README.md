@@ -75,9 +75,9 @@ in the below instructions, k8s is deployed via `rancher`; however any other simi
 * Deploy `rancher/2.0` per its installation instructions, on your `master` node
    * single node install is fine for now.
    * familiarize yourself with the rancher interface
-* Add k8s cluster via `rancher`, tune `sasl` values and use for network `weave`
+* Add k8s cluster via `rancher`, tune `sans` values and use for network `weave`
    * Save in git repo your rancher yaml file, like in: `20181126-k8s-site-XYZ-prod-rancher-config.yaml`
-   * Spin up sufficient number of worker nodes for your cluster.
+   * Spin up a sufficient number of worker nodes for your cluster, via rancher.
 * Make sure you download the k8s config file and save it as the `admin.conf` in your git repo.
    * T.B.D: Edit `admin.conf` to use the master node floating IP in place of something like `server: https://192.168.20.7:6443`.
 * `kubectl get nodes` should return the list of nodes ; Do NOT proceed until this is working fine.
@@ -111,8 +111,8 @@ $ helm init --override 'spec.template.spec.containers[0].command'='{/tiller,--st
 
 Setup the nodes which will run the ingress controller:
 ```bash
-$ kubectl edit node k8s-node-1 # Set a label like `ingress-node="true"`
-# one node at least, more is possible. Not sure if would help scale the network though.
+$ kubectl edit node mynode-1 # Set a label like `ingress-node: "true"` AND verify afterwords it is in place.
+# one node at least, more is possible. Not sure if it would help to scale the network though.
 ```
 
 Install the `nginx-ingress`:
