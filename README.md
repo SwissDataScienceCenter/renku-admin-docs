@@ -207,9 +207,10 @@ $ kubectl delete ns test
 
 ```bash
 $ ## kubectl apply -f manifests/storage-class.yml ## This is redundant if you have done step D. above.
-$ kubectl apply -f renku-pv.yaml
+$ kubectl create -f renku-pv.yaml
 $ kubectl create ns renku
-$ kubectl -n renku apply -f renku-pvc.yaml
+$ kubectl -n renku create -f renku-pvc.yaml
+$ kubectl -n renku edit pvc renku-postgresql
 $ kubectl get pv
 $ kubectl get pvc -n renku
 $ kubectl describe persistentvolumeclaim -n renku  ## this should not show any error, just PVs ready to be used
