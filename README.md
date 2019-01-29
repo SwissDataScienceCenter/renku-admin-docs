@@ -121,6 +121,17 @@ $ helm upgrade nginx-ingress --namespace kube-system --install stable/nginx-ingr
 $ helm upgrade nginx-ingress --namespace kube-system --install stable/nginx-ingress --set controller.hostNetwork=true 
 ```
 
+Verify that the configuration is as expected:
+```
+$ helm status nginx-ingress|grep -i port
+  export HTTP_NODE_PORT=32080
+  export HTTPS_NODE_PORT=32443
+  export NODE_IP=$(kubectl --namespace kube-system get nodes -o jsonpath="{.items[0].status.addresses[1].address}")
+  echo "Visit http://$NODE_IP:$HTTP_NODE_PORT to access your application via HTTP."
+  echo "Visit https://$NODE_IP:$HTTPS_NODE_PORT to access your application via HTTPS."
+                servicePort: 80
+```
+
 Let's check we can contact the ingress:
 ```bash
 $ curl -v http://<floating-ip>/
@@ -216,7 +227,15 @@ $ kubectl get pvc -n renku
 $ kubectl describe persistentvolumeclaim -n renku  ## this should not show any error, just PVs ready to be used
 ```
 
-So, `kubectl describe pvc -n renku` should not give any fault; Do NOT proceed until this is working fine.
+Ensure that PVs have a `default storageclass` and the following is set:
+```
+metadata:
+  name: default
+  annotations:
+    storageclass.beta.kubernetes.io/is-default-class: "true"
+```
+
+So, `kubectl describe pvc -n renku` should not give any fault; Do NOT proceed until everything at this point is working fine.
 
 ## I. Edit file renku-values.yaml
 
