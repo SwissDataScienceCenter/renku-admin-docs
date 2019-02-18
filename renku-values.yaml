@@ -3,8 +3,8 @@
 variables_switchboard:
   mainURL:       &mainURL       renku.mydomain.ch
   baseURL:       &baseURL       https://renku.mydomain.ch
-  registryURL:   &registryURL   https://registry.renku.mydomain.ch ## drop `registry.` if using same endpoint for gitlab
-  registryName:  &registryName  registry.renku.mydomain.ch         ## drop `registry.` if using same endpoint for gitlab
+  registryURL:   &registryURL   https://registry.renku.mydomain.ch
+  registryName:  &registryName  registry.renku.mydomain.ch
   gitlabURL:     &gitlabURL     https://renku.mydomain.ch/gitlab
   jupyterhubURL: &jupyterhubURL https://renku.mydomain.ch/jupyterhub
   gatewayURL:    &gatewayURL    https://renku.mydomain.ch/api
