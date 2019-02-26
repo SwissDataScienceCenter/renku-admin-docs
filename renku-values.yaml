@@ -1,16 +1,16 @@
 ## Configuration file for deploying the renku chart at http://renku.mydomain.ch
 ---
 variables_switchboard:
-  mainURL:       &mainURL       renku.mydomain.ch
-  baseURL:       &baseURL       https://renku.mydomain.ch
-  registryURL:   &registryURL   https://registry.renku.mydomain.ch
-  registryName:  &registryName  registry.renku.mydomain.ch
-  gitlabURL:     &gitlabURL     https://renku.mydomain.ch/gitlab
-  jupyterhubURL: &jupyterhubURL https://renku.mydomain.ch/jupyterhub
-  gatewayURL:    &gatewayURL    https://renku.mydomain.ch/api
+  mainURL:            &mainURL            renku.mydomain.ch
+  baseURL:            &baseURL            https://renku.mydomain.ch
+  registryURL:        &registryURL        https://registry.renku.mydomain.ch
+  registryName:       &registryName       registry.renku.mydomain.ch
+  gitlabURL:          &gitlabURL          https://renku.mydomain.ch/gitlab
+  jupyterhubURL:      &jupyterhubURL      https://renku.mydomain.ch/jupyterhub
+  gatewayURL:         &gatewayURL         https://renku.mydomain.ch/api
   oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
-  ingressTLS:    &ingressTLS    renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores
-  registryTLS:   &registryTLS   registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores
+  ingressTLS:         &ingressTLS         renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores
+  registryTLS:        &registryTLS        registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores
 
 credentials:
   pass101: &global_gitlab_clientSecret                      ## ReplaceMeWithA64CharString
