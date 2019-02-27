@@ -14,7 +14,7 @@ the work from:
 
 ## OpenStack Requirements
 
-Access to an OpenStack cluster with enough resources to spawn a handful of VMs (minimum 3), 3x 100GBs and at least two available floating IPs.
+Access to an OpenStack cluster with enough resources to spawn a handful of VMs (minimum 3), 2x 100GBs and at least two available floating IPs.
 
 It is strongly recommended to use a machine user on OpenStack.
 To set this up on SWITCHengines, contact their support (see email: https://help.switch.ch/engines/).
@@ -24,9 +24,9 @@ Note: LBaaSv2 is supported on SWITCHengines -> https://cloudblog.switch.ch/2017/
 The last part requires the registration of a domain name.
 Without it, we cannot properly set up HTTPS entry points.
 
-As minimum resources, we propose:
+As minimum resources, suitable only for testing, we propose:
 * 3x nodes (4 cores, 16GBs, 40GBs)
-* 3x PVs of 100GB (pv-renku-gitlab, pv-renku-postgresql, pv-renku-tier2)
+* 2x PVs of 100GB (pv-renku-gitlab, pv-renku-postgresql)
 
 # Usage
 
