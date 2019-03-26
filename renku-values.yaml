@@ -88,13 +88,13 @@ gitlab:
     connection: |-
       {
         'provider' => 'OpenStack',
-        'openstack_auth_url' => 'https://keystone.--:5000/v3/auth/tokens',
-        'openstack_username' => '-',
-        'openstack_api_key' => '--',
+        'openstack_auth_url' => 'https://keystone.---:5000/v3/auth/tokens',
+        'openstack_username' => '---',
+        'openstack_api_key' => '---',
         'openstack_domain_name' => 'Default',
-        'openstack_project_id' => '-',
-        'openstack_region' => '-',
-        'openstack_temp_url_key' => '-'
+        'openstack_project_id' => '---',
+        'openstack_region' => '--',
+        'openstack_temp_url_key' => '---'
       }
   registry:
     enabled: true
@@ -103,13 +103,13 @@ gitlab:
     storage: |-
       {
         'swift' => {
-          'authurl' => 'https://keystone.--:5000/v3',
-          'username' => '-',
-          'password' => '--',
-          'region' => '-',
+          'authurl' => 'https://keystone.---:5000/v3',
+          'username' => '---',
+          'password' => '---',
+          'region' => '--',
           'container' => 'registry',
-          'tenantid' => '-',
-          'domain' => '-'
+          'tenantid' => '--',
+          'domain' => '---'
         }
       }
     exposedAs: Ingress
@@ -195,21 +195,13 @@ ui:
 
       If you are here for your first time, we recommend you go through our
       [tutorial](https://renku.readthedocs.io/en/latest/user/firststeps.html).
-      
-      ## Dec. 25th Upgrade to Renku 0.3.0
-      
-      We have upgraded Renku - this version brings many improvements, mainly in the 
-      backends and the CLI, but also in the stability and usability of the UI. 
 
-      Please see the "Breaking Changes" section of the [Release notes](https://github.com/SwissDataScienceCenter/renku/releases/tag/0.3.0)
-      to see what has changed and how to upgrade your projects. 
-      
       ## Help
 
-      If you need help, you can reach out to us via
-      [Gitter](https://gitter.im/SwissDataScienceCenter/renku ) or the issue
+      If you need help, the preferred way to reach us is via the
+      [*Gitter channel*](https://gitter.im/SwissDataScienceCenter/renku ) or the issue
       tracker in our [GitHub repository](https://github.com/SwissDataScienceCenter/renku).
-      You can also browse the [general Renku documentation](https://renku.readthedocs.org) 
+      You can also browse the [general Renku documentation](https://renku.readthedocs.org)
       as well as the [command-line interface docs](https://renku-python.readthedocs.org).
 
       ## renku.mydomain.ch
@@ -221,6 +213,8 @@ ui:
       We also kindly request that you do not upload datasets larger than 1GB for
       the time being. In the future, we will remove this restriction.
 
+      ### Renku version 0.3.1 (March 11th 2019)
+      
   resources:
     <<: *defaultResources
 
