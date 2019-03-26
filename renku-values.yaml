@@ -3,14 +3,14 @@
 variables_switchboard:
   mainURL:            &mainURL            renku.mydomain.ch
   baseURL:            &baseURL            https://renku.mydomain.ch
-  registryURL:        &registryURL        https://registry.renku.mydomain.ch
   registryName:       &registryName       registry.renku.mydomain.ch
+  registryURL:        &registryURL        https://registry.renku.mydomain.ch
   gitlabURL:          &gitlabURL          https://renku.mydomain.ch/gitlab
   jupyterhubURL:      &jupyterhubURL      https://renku.mydomain.ch/jupyterhub
   gatewayURL:         &gatewayURL         https://renku.mydomain.ch/api
   oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
-  ingress_tls:        &ingress_tls        renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores
-  registry_tls:       &registry_tls       registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores
+  ingress_tls:        &ingress_tls        renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores please
+  registry_tls:       &registry_tls       registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores please
 
 credentials:
   pass101: &global_gitlab_clientSecret                      ## ReplaceMeWithA64CharString
@@ -248,7 +248,7 @@ notebooks:
       host: *registryName
       ## Set the registry secret key
       secret: renku-notebooks-registry
-  resources: 
+  resources:
     <<: *defaultResources
   jupyterhub:
     rbac:
@@ -283,7 +283,7 @@ notebooks:
     proxy:
       secretToken: *nb_jupyterhub_proxy_secretToken
       chp:
-        resources: 
+        resources:
           <<: *defaultResources
     auth:
       state:
@@ -297,7 +297,7 @@ gateway:
     clientId: *gatewayClient
     clientSecret: *nb_jupyterhub_hub_services_gateway_apiToken
   secretKey: *gateway_secretKey
-  resources: 
+  resources:
     <<: *defaultResources
   redis:
     master:
