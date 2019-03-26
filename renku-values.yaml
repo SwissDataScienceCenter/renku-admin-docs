@@ -9,8 +9,8 @@ variables_switchboard:
   jupyterhubURL:      &jupyterhubURL      https://renku.mydomain.ch/jupyterhub
   gatewayURL:         &gatewayURL         https://renku.mydomain.ch/api
   oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
-  ingressTLS:         &ingressTLS         renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores
-  registryTLS:        &registryTLS        registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores
+  ingress_tls:        &ingress_tls        renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores
+  registry_tls:       &registry_tls       registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores
 
 credentials:
   pass101: &global_gitlab_clientSecret                      ## ReplaceMeWithA64CharString
@@ -32,6 +32,7 @@ credentials:
   pass505: &nb_jupyterhub_auth_state_cryptoKey              ## ReplaceMeWithA64CharString
   pass506: &nb_jupyterhub_auth_gitlab_clientSecret          ## ReplaceMeWithA64CharString
   pass601: &gateway_secretKey                               ## ReplaceMeWithA64CharString
+  # pass701: &graph_token_repo                                ## ReplaceMeWithA64CharString
 
 defaultResources: &defaultResources
   requests:
@@ -62,6 +63,9 @@ global:
     gitlabClientSecret: *global_gateway_gitlabClientSecret
   renku:
     domain: *mainURL
+  graph:
+    tokenRepository:
+      postgresPassword: *graph_token_repo
   useHTTPS: true
 
 gitlab:
@@ -69,7 +73,7 @@ gitlab:
   image:
     pullPolicy: IfNotPresent
     repository: gitlab/gitlab-ce
-    tag: 11.5.4-ce.0
+    tag: 11.7.5-ce.0
   password: *gitlab_password
   ssh:
     externalPort: 22
@@ -120,7 +124,7 @@ gitlab:
       tls:
       - hosts:
         - *registryName
-        secretName: *registryTLS
+        secretName: *registry_tls
   resources:
     requests:
       cpu: 1500m
@@ -151,7 +155,7 @@ ingress:
   tls:
   - hosts:
     - *mainURL
-    secretName: *ingressTLS
+    secretName: *ingress_tls
 
 keycloak:
   enabled: true
