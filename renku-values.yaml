@@ -225,25 +225,26 @@ ui:
       We also kindly request that you do not upload datasets larger than 1GB for
       the time being. In the future, we will remove this restriction.
 
-      ### Renku version 0.3.1 (March 11th 2019)
+      ### Renku version 0.3.2 (April 11th 2019)
       
   resources:
     <<: *defaultResources
 
 notebooks:
+  imageRegistry: *registryName
   serverOptions:
     cpu_request:
       default: 0.1
       options: [0.1, 0.5, 1.0, 2.0, 4.0]
     mem_request:
       default: 1G
-      options: [1G, 2G, 4G]
+      options: [1G, 2G, 4G, 8G]
     gpu_request:
       default: 0
       range: [0, 0] ## upgrade second value to number of GPUs per node
     defaultUrl:
       default: /lab
-      options: [/lab]
+      options: [/lab, /rstudio]
     lfs_auto_fetch:
       default: false
   gitlab:
@@ -292,11 +293,12 @@ notebooks:
         resources:
           <<: *defaultResources
     auth:
+      gitlab:
+        clientId: *nb_jupyterhub_auth_gitlab_clientId
+        clientSecret: *nb_jupyterhub_auth_gitlab_clientSecret
       state:
         enabled: true
         cryptoKey: *nb_jupyterhub_auth_state_cryptoKey
-      gitlab:
-        clientSecret: *nb_jupyterhub_auth_gitlab_clientSecret
 
 gateway:
   jupyterhub:
