@@ -1,38 +1,45 @@
 ## Configuration file for deploying the renku chart at http://renku.mydomain.ch
 ---
-variables_switchboard:
+
+_variables_switchboard:
   mainURL:            &mainURL            renku.mydomain.ch
   baseURL:            &baseURL            https://renku.mydomain.ch
+  #minioName:          &minioName          minio.mydomain.ch
+  #keycloakURL:        &keycloakURL        https://keycloak.mydomain.ch
   registryName:       &registryName       registry.renku.mydomain.ch
   registryURL:        &registryURL        https://registry.renku.mydomain.ch
   gitlabURL:          &gitlabURL          https://renku.mydomain.ch/gitlab
   jupyterhubURL:      &jupyterhubURL      https://renku.mydomain.ch/jupyterhub
+  #jupyterhubAuthCallbackUrl: &jupyterhub_gitlab_callbackUrl https://renku.mydomain.ch/jupyterhub/hub/oauth_callback
   gatewayURL:         &gatewayURL         https://renku.mydomain.ch/api
   oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
   ingress_tls:        &ingress_tls        renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores please
   registry_tls:       &registry_tls       registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores please
 
 credentials:
-  pass101: &global_gitlab_clientSecret                      ## ReplaceMeWithA64CharString
-  pass102: &global_gitlab_postgresPassword                  ## ReplaceMeWithA32CharString
-  pass103: &global_gitlab_sudoToken                         ## ReplaceMeWithA64CharString
-  pass104: &global_keycloak_postgresPassword                ## ReplaceMeWithA32CharString
-  pass105: &global_jupyterhub_postgresPassword              ## ReplaceMeWithA32CharString
-  pass106: &nb_jupyterhub_hub_db_url                        ## postgres+psycopg2://jupyterhub:<<ReplaceMeWithValueAbove>>@renku-postgresql:5432/jupyterhub
-  pass107: &global_gateway_clientSecret                     ## ReplaceMeWithaUUID , `uuidgen`
-  pass108: &global_gateway_gitlabClientSecret               ## ReplaceMeWithA64CharString
-  pass201: &gitlab_password                                 ## ReplaceMeWithA32CharString
-  pass202: &gitlab_sharedRunnersRegistrationToken           ## ReplaceMeWithA64CharString
-  pass301: &keycloak_password                               ## ReplaceMeWithA32CharString
-  pass401: &postgresql_postgresPassword                     ## ReplaceMeWithA64CharString
-  pass501: &nb_jupyterhub_hub_cookieSecret                  ## ReplaceMeWithA64CharString
-  pass502: &nb_jupyterhub_hub_services_notebooks_apiToken   ## ReplaceMeWithA64CharString
-  pass503: &nb_jupyterhub_hub_services_gateway_apiToken     ## ReplaceMeWithA64CharString
-  pass504: &nb_jupyterhub_proxy_secretToken                 ## ReplaceMeWithA64CharString
-  pass505: &nb_jupyterhub_auth_state_cryptoKey              ## ReplaceMeWithA64CharString
-  pass506: &nb_jupyterhub_auth_gitlab_clientSecret          ## ReplaceMeWithA64CharString
-  pass601: &gateway_secretKey                               ## ReplaceMeWithA64CharString
-  # pass701: &graph_token_repo                                ## ReplaceMeWithA64CharString
+  pass101: &global_gitlab_clientSecret                      #ReplaceMeWithA64CharString
+  pass102: &global_gitlab_postgresPassword                  #ReplaceMeWithA64CharString
+  pass103: &global_gitlab_sudoToken                         #ReplaceMeWithA64CharString
+  pass104: &global_keycloak_postgresPassword                #ReplaceMeWithA64CharString
+  pass105: &global_jupyterhub_postgresPassword              #ReplaceMeWithA64CharString
+  pass106: &global_graph_tokenRepository                    #ReplaceMeWithA64CharString
+  pass107: &global_graph_dbEventLog                         #ReplaceMeWithA64CharString
+  pass108: &global_gateway_clientSecret                     ## ReplaceMeWithUUID , `uuidgen`
+  pass109: &global_gateway_gitlabClientSecret               #ReplaceMeWithA64CharString
+  pass110: &global_gateway_gitlabClientId                   #ReplaceMeWithA64CharString
+  pass201: &gitlab_password                                 #ReplaceMeWithA64CharString
+  pass202: &gitlab_sharedRunnersRegistrationToken           #ReplaceMeWithA64CharString
+  pass301: &keycloak_password                               #ReplaceMeWithA64CharString
+  pass401: &postgresql_postgresPassword                     #ReplaceMeWithA64CharString
+  pass501: &nb_jupyterhub_hub_cookieSecret                  #ReplaceMeWithA64CharString
+  pass502: &nb_jupyterhub_hub_db_url                        ## postgres+psycopg2://jupyterhub:<<ReplaceMeWithPass105Above>>@renku-postgresql:5432/jupyterhub
+  pass503: &nb_jupyterhub_hub_services_notebooks_apiToken   #ReplaceMeWithA64CharString
+  pass504: &nb_jupyterhub_hub_services_gateway_apiToken     #ReplaceMeWithA64CharString
+  pass505: &nb_jupyterhub_proxy_secretToken                 #ReplaceMeWithA64CharString
+  pass506: &nb_jupyterhub_auth_state_cryptoKey              #ReplaceMeWithA64CharString
+  pass507: &nb_jupyterhub_auth_gitlab_clientId              #ReplaceMeWithA64CharString
+  pass508: &nb_jupyterhub_auth_gitlab_clientSecret          #ReplaceMeWithA64CharString
+  pass601: &gateway_secretKey                               #ReplaceMeWithA64CharString
 
 defaultResources: &defaultResources
   requests:
