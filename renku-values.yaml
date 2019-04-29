@@ -60,13 +60,18 @@ global:
     postgresPassword: *global_jupyterhub_postgresPassword
   gateway:
     clientSecret: *global_gateway_clientSecret
+    gitlabClientId: *global_gateway_gitlabClientId
     gitlabClientSecret: *global_gateway_gitlabClientSecret
   renku:
+    https: true
     domain: *mainURL
   graph:
     tokenRepository:
-      postgresPassword: *graph_token_repo
+      postgresPassword: *global_graph_tokenRepository
+    dbEventLog:
+      postgresPassword: *global_graph_dbEventLog
   useHTTPS: true
+
 
 gitlab:
   enabled: true
