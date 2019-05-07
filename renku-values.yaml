@@ -17,29 +17,29 @@ _variables_switchboard:
   registry_tls:       &registry_tls       registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores please
 
 credentials:
-  pass101: &global_gitlab_clientSecret                      #ReplaceMeWithA64CharString
-  pass102: &global_gitlab_postgresPassword                  #ReplaceMeWithA64CharString
-  pass103: &global_gitlab_sudoToken                         #ReplaceMeWithA64CharString
-  pass104: &global_keycloak_postgresPassword                #ReplaceMeWithA64CharString
-  pass105: &global_jupyterhub_postgresPassword              #ReplaceMeWithA64CharString
-  pass106: &global_graph_tokenRepository                    #ReplaceMeWithA64CharString
-  pass107: &global_graph_dbEventLog                         #ReplaceMeWithA64CharString
-  pass108: &global_gateway_clientSecret                     ## ReplaceMeWithUUID , `uuidgen`
-  pass109: &global_gateway_gitlabClientSecret               #ReplaceMeWithA64CharString
-  pass110: &global_gateway_gitlabClientId                   #ReplaceMeWithA64CharString
-  pass201: &gitlab_password                                 #ReplaceMeWithA64CharString
-  pass202: &gitlab_sharedRunnersRegistrationToken           #ReplaceMeWithA64CharString
-  pass301: &keycloak_password                               #ReplaceMeWithA64CharString
-  pass401: &postgresql_postgresPassword                     #ReplaceMeWithA64CharString
-  pass501: &nb_jupyterhub_hub_cookieSecret                  #ReplaceMeWithA64CharString
-  pass502: &nb_jupyterhub_hub_db_url                        ## postgres+psycopg2://jupyterhub:<<ReplaceMeWithPass105Above>>@renku-postgresql:5432/jupyterhub
-  pass503: &nb_jupyterhub_hub_services_notebooks_apiToken   #ReplaceMeWithA64CharString
-  pass504: &nb_jupyterhub_hub_services_gateway_apiToken     #ReplaceMeWithA64CharString
-  pass505: &nb_jupyterhub_proxy_secretToken                 #ReplaceMeWithA64CharString
-  pass506: &nb_jupyterhub_auth_state_cryptoKey              #ReplaceMeWithA64CharString
-  pass507: &nb_jupyterhub_auth_gitlab_clientId              #ReplaceMeWithA64CharString
-  pass508: &nb_jupyterhub_auth_gitlab_clientSecret          #ReplaceMeWithA64CharString
-  pass601: &gateway_secretKey                               #ReplaceMeWithA64CharString
+  pass101: &global_gitlab_clientSecret                      f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass102: &global_gitlab_postgresPassword                  f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass103: &global_gitlab_sudoToken                         f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass104: &global_keycloak_postgresPassword                f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass105: &global_jupyterhub_postgresPassword              f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass106: &global_graph_tokenRepository                    f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass107: &global_graph_dbEventLog                         f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass108: &global_gateway_clientSecret                     719ad767-175b-40d0-9f34-6fdd9b0b894b
+  pass109: &global_gateway_gitlabClientSecret               f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass110: &global_gateway_gitlabClientId                   f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass201: &gitlab_password                                 f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass202: &gitlab_sharedRunnersRegistrationToken           f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass301: &keycloak_password                               f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass401: &postgresql_postgresPassword                     f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass501: &nb_jupyterhub_hub_cookieSecret                  f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass502: &nb_jupyterhub_hub_db_url                        postgres+psycopg2://jupyterhub:f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b@renku-postgresql:5432/jupyterhub
+  pass503: &nb_jupyterhub_hub_services_notebooks_apiToken   f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass504: &nb_jupyterhub_hub_services_gateway_apiToken     f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass505: &nb_jupyterhub_proxy_secretToken                 f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass506: &nb_jupyterhub_auth_state_cryptoKey              f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass507: &nb_jupyterhub_auth_gitlab_clientId              f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass508: &nb_jupyterhub_auth_gitlab_clientSecret          f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
+  pass601: &gateway_secretKey                               f0308d6e4fa76df47fbbc6d1dcb00aa0bea5874d11aef2b05385e6f67205431b
 
 defaultResources: &defaultResources
   requests:
@@ -85,7 +85,7 @@ gitlab:
   image:
     pullPolicy: IfNotPresent
     repository: gitlab/gitlab-ce
-    tag: 11.7.5-ce.0
+    tag: 11.7.11-ce.0
   password: *gitlab_password
   ssh:
     externalPort: 22
@@ -129,8 +129,8 @@ gitlab:
       annotations:
         kubernetes.io/ingress.class: nginx
         kubernetes.io/tls-acme: "true"
-        nginx.ingress.kubernetes.io/proxy-body-size: '0' # Adjust to a reasonable value for production to avoid DOS attacks.
-        nginx.ingress.kubernetes.io/proxy-request-buffering: 'off' # Needed if GitLab is behind this ingress
+        nginx.ingress.kubernetes.io/proxy-body-size: "0" # Adjust to a reasonable value for production to avoid DOS attacks.
+        nginx.ingress.kubernetes.io/proxy-request-buffering: "off" # Needed if GitLab is behind this ingress
       hosts:
       - *registryName
       tls:
@@ -159,8 +159,8 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: '0' # Adjust to a reasonable value for production to avoid DOS attacks.
-    nginx.ingress.kubernetes.io/proxy-request-buffering: 'off' # Needed if GitLab is behind this ingress
+    nginx.ingress.kubernetes.io/proxy-body-size: "0" # Adjust to a reasonable value for production to avoid DOS attacks.
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off" # Needed if GitLab is behind this ingress
   enabled: true
   hosts:
   - *mainURL
@@ -202,30 +202,7 @@ ui:
   jupyterhubUrl: *jupyterhubURL
   gatewayUrl: *gatewayURL
   welcomePage:
-    text: |
-      ## First Time
-
-      If you are here for your first time, we recommend you go through our
-      [tutorial](https://renku.readthedocs.io/en/latest/user/firststeps.html).
-
-      ## Help
-
-      If you need help, the preferred way to reach us is via the
-      [*Gitter channel*](https://gitter.im/SwissDataScienceCenter/renku ) or the issue
-      tracker in our [GitHub repository](https://github.com/SwissDataScienceCenter/renku).
-      You can also browse the [general Renku documentation](https://renku.readthedocs.org)
-      as well as the [command-line interface docs](https://renku-python.readthedocs.org).
-
-      ## renku.mydomain.ch
-
-      Renku is under active development. We encourage you to have a look around,
-      and we are doing our best to keep it stable, but please be aware that changes
-      may be made without prior warning and could lead to service interruptions.
-
-      We also kindly request that you do not upload datasets larger than 1GB for
-      the time being. In the future, we will remove this restriction.
-
-      ### Renku version 0.3.2 (April 11th 2019)
+    text: "Hello World 20190507"
       
   resources:
     <<: *defaultResources
@@ -327,9 +304,9 @@ tests:
      firstName: Bruce
      lastName: Wayne
      email: bwayne@example.com
-     password: ## ReplaceMewithA32charString
+     password: ReplaceMewithA64charString
    - username: ckent
      firstName: Clark
      lastName: Kent
      email: ckent@example.com
-     password: ## ReplaceMewithA32charString
+     password: ReplaceMewithA64charString
