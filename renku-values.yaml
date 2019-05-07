@@ -301,6 +301,8 @@ notebooks:
         cryptoKey: *nb_jupyterhub_auth_state_cryptoKey
 
 gateway:
+  #keycloakUrl: *keycloakURL
+  #gitlabUrl: *gitlabURL
   jupyterhub:
     clientId: *gatewayClient
     clientSecret: *nb_jupyterhub_hub_services_gateway_apiToken
