@@ -15,6 +15,7 @@ spec:
   claimRef:
     namespace: renku
     name: renku-gitlab
+  persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -26,9 +27,28 @@ spec:
   accessModes:
   - ReadWriteOnce
   capacity:
-    storage: 200Gi
+    storage: 100Gi
   cinder:
     volumeID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   claimRef:
     namespace: renku
     name: renku-postgresql
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    failure-domain.beta.kubernetes.io/zone: nova
+  name: pv-renku-jena
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 200Gi
+  cinder:
+    volumeID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  claimRef:
+    namespace: renku
+    name: renku-jena
+  persistentVolumeReclaimPolicy: Retain
