@@ -94,7 +94,7 @@ gitlab:
       enabled: true
       nodePort: 32022
   persistence:
-    existingClaim: renku-gitlab
+    existingClaim: renku-gitlab ## Alternatively, replace with the PVC name
   lfsObjects:
     enabled: true
     bucketName: lfs-objects
@@ -186,7 +186,7 @@ keycloak:
 postgresql:
   postgresPassword: *postgresql_postgresPassword
   persistence:
-    existingClaim: renku-postgresql
+    existingClaim: renku-postgresql ## Alternatively, replace with the PVC name
   resources:
     requests:
       cpu: 1000m
@@ -310,7 +310,7 @@ graph:
     admin:
       password: *sparql_password
     persistence:
-      existingClaim: ## Replace with PVC
+      existingClaim: renku-jena ## Alternatively, replace with the PVC name
   gitlab:
     url: *gitlabURL
   webhookService:
