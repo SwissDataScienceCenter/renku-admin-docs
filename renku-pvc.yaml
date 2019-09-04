@@ -21,4 +21,16 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: renku-jena
+  namespace: renku
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
       storage: 200Gi

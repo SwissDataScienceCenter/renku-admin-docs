@@ -1,38 +1,54 @@
 ## Configuration file for deploying the renku chart at http://renku.mydomain.ch
 ---
 variables_switchboard:
-  mainURL:            &mainURL            renku.mydomain.ch
-  baseURL:            &baseURL            https://renku.mydomain.ch
-  registryName:       &registryName       registry.renku.mydomain.ch
-  registryURL:        &registryURL        https://registry.renku.mydomain.ch
-  gitlabURL:          &gitlabURL          https://renku.mydomain.ch/gitlab
-  jupyterhubURL:      &jupyterhubURL      https://renku.mydomain.ch/jupyterhub
-  gatewayURL:         &gatewayURL         https://renku.mydomain.ch/api
-  oauth_redirect_uri: &oauth_redirect_uri https://renku.mydomain.ch/api/auth/jupyterhub/token
-  ingress_tls:        &ingress_tls        renku-mydomain-ch-tls           ## RFC1123 compliant name, no underscores please
-  registry_tls:       &registry_tls       registry-renku-mydomain-ch-tls  ## RFC1123 compliant name, no underscores please
+  ## Replace renku.mydomain.ch with your Renku domain
+  mainURL:                   &mainURL                       renku.mydomain.ch
+  baseURL:                   &baseURL                       https://renku.mydomain.ch
+  registryName:              &registryName                  registry.renku.mydomain.ch           ## Fill in with Gitlab registry, including port if needed
+  registryURL:               &registryURL                   https://registry.renku.mydomain.ch   ## Fill in with Gitlab registry, including port if needed
+  gitlabURL:                 &gitlabURL                     https://renku.mydomain.ch/gitlab     ## Alternatively, fill in with Gitlab domain (standalone)
+  jupyterhubURL:             &jupyterhubURL                 https://renku.mydomain.ch/jupyterhub
+  jupyterhubAuthCallbackUrl: &jupyterhub_gitlab_callbackUrl https://renku.mydomain.ch/jupyterhub/hub/oauth_callback
+  gatewayURL:                &gatewayURL                    https://renku.mydomain.ch/api
+  oauth_redirect_uri:        &oauth_redirect_uri            https://renku.mydomain.ch/api/auth/jupyterhub/token
+  ingress_tls:               &ingress_tls                   renku-mydomain-ch-tls                ## RFC1123 compliant name, no underscores please
+  registry_tls:              &registry_tls                  registry-renku-mydomain-ch-tls       ## RFC1123 compliant name, no underscores please
 
 credentials:
-  pass101: &global_gitlab_clientSecret                      ## ReplaceMeWithA64CharString
-  pass102: &global_gitlab_postgresPassword                  ## ReplaceMeWithA32CharString
-  pass103: &global_gitlab_sudoToken                         ## ReplaceMeWithA64CharString
-  pass104: &global_keycloak_postgresPassword                ## ReplaceMeWithA32CharString
-  pass105: &global_jupyterhub_postgresPassword              ## ReplaceMeWithA32CharString
-  pass106: &nb_jupyterhub_hub_db_url                        ## postgres+psycopg2://jupyterhub:<<ReplaceMeWithValueAbove>>@renku-postgresql:5432/jupyterhub
-  pass107: &global_gateway_clientSecret                     ## ReplaceMeWithaUUID , `uuidgen`
-  pass108: &global_gateway_gitlabClientSecret               ## ReplaceMeWithA64CharString
-  pass201: &gitlab_password                                 ## ReplaceMeWithA32CharString
-  pass202: &gitlab_sharedRunnersRegistrationToken           ## ReplaceMeWithA64CharString
-  pass301: &keycloak_password                               ## ReplaceMeWithA32CharString
-  pass401: &postgresql_postgresPassword                     ## ReplaceMeWithA64CharString
-  pass501: &nb_jupyterhub_hub_cookieSecret                  ## ReplaceMeWithA64CharString
-  pass502: &nb_jupyterhub_hub_services_notebooks_apiToken   ## ReplaceMeWithA64CharString
-  pass503: &nb_jupyterhub_hub_services_gateway_apiToken     ## ReplaceMeWithA64CharString
-  pass504: &nb_jupyterhub_proxy_secretToken                 ## ReplaceMeWithA64CharString
-  pass505: &nb_jupyterhub_auth_state_cryptoKey              ## ReplaceMeWithA64CharString
-  pass506: &nb_jupyterhub_auth_gitlab_clientSecret          ## ReplaceMeWithA64CharString
-  pass601: &gateway_secretKey                               ## ReplaceMeWithA64CharString
-  # pass701: &graph_token_repo                                ## ReplaceMeWithA64CharString
+  pass101: &global_gitlab_clientSecret                      ## Fill in with gitlab client in keycloak
+  pass102: &global_gitlab_postgresPassword                  ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass103: &global_gitlab_sudoToken                         ## Fill in with gitlab sudo token
+  pass104: &global_keycloak_postgresPassword                ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass105: &global_jupyterhub_postgresPassword              ## Fill in with a 64 CharString e.g. openssl rand -hex 32 USED in pass 502
+  pass106: &global_graph_tokenRepository                    ## Fill in with a 64 CharString e.g. openssl rand -hex 32 ## openssl rand -hex 32
+  pass107: &global_graph_dbEventLog                         ## Fill in with a 64 CharString e.g. openssl rand -hex 32 ## openssl rand -hex 32
+  pass108: &global_gateway_clientSecret                     ## Fill in with gateway keycloak client
+  pass109: &global_gateway_gitlabClientSecret               ## Fill in with renku-ui gitlab client secret
+  pass110: &global_gateway_gitlabClientId                   ## Fill in with renku-ui gitlab client id
+  ## Gitlab
+  pass201: &gitlab_password                                 ## Fill in with a 64 CharString e.g. openssl rand -hex 32  (not needed if standalone) 
+  pass202: &gitlab_sharedRunnersRegistrationToken           ## Fill in with a 64 CharString e.g. openssl rand -hex 32 (not needed if standalone)
+  pass203: &gitlab_root_registry_token                      ## Fill in with token generated from any root user on gitlab
+  ## Keycloak
+  pass301: &keycloak_password                               ## Fill in with Keycloak password (if standalone) or with a 32 CharString
+  ## Postgresql
+  pass401: &postgresql_postgresPassword                     ## Fill in with Postgresql password (if standalone) or with a 32 CharString
+  ## Notebooks
+  pass501: &nb_jupyterhub_hub_cookieSecret                  ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass502: &nb_jupyterhub_hub_db_url                        ## postgres+psycopg2://jupyterhub:<<FillWithValueOfpass104>>@renku-postgresql:5432/jupyterhub
+  pass503: &nb_jupyterhub_hub_services_notebooks_apiToken   ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass504: &nb_jupyterhub_hub_services_gateway_apiToken     ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass505: &nb_jupyterhub_proxy_secretToken                 ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass506: &nb_jupyterhub_auth_state_cryptoKey              ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass507: &nb_jupyterhub_auth_gitlab_clientId              ## Fill in with jupyterhub gitlab client id
+  pass508: &nb_jupyterhub_auth_gitlab_clientSecret          ## Fill in with jupyterhub gitlab client secret
+  ## Gateway
+  pass601: &gateway_secretKey                               ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  ## Graph
+  pass701: &graph_jena_admin_password                       ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass702: &graph_sparql_password                           ## Fill in with a 64 CharString e.g. openssl rand -hex 32
+  pass703: &graph_webhook_service_secret                    ## Generate with openssl rand -hex 8|base64
+  pass704: &graph_token_repository_secret                   ## Genereated with openssl rand -hex 8|base64
 
 defaultResources: &defaultResources
   requests:
@@ -60,20 +76,28 @@ global:
     postgresPassword: *global_jupyterhub_postgresPassword
   gateway:
     clientSecret: *global_gateway_clientSecret
+    gitlabClientId: *global_gateway_gitlabClientId
     gitlabClientSecret: *global_gateway_gitlabClientSecret
   renku:
+    https: true
     domain: *mainURL
   graph:
     tokenRepository:
-      postgresPassword: *graph_token_repo
+      postgresPassword: *global_graph_tokenRepository
+    dbEventLog:
+      postgresPassword: *global_graph_dbEventLog
+    jena:
+      dataset: renku
   useHTTPS: true
 
 gitlab:
   enabled: true
+  oauth:
+    autoSignIn: true
   image:
     pullPolicy: IfNotPresent
     repository: gitlab/gitlab-ce
-    tag: 11.7.5-ce.0
+    tag: 11.8.10-ce.0
   password: *gitlab_password
   ssh:
     externalPort: 22
@@ -81,7 +105,9 @@ gitlab:
       enabled: true
       nodePort: 32022
   persistence:
-    existingClaim: renku-gitlab
+    existingClaim: renku-gitlab ## Alternatively, replace with the PVC name
+  ## The following two sections are an example for using OpenStack as backend for lfsObjects. 
+  ## For other options please refer to gitlab documentation https://docs.gitlab.com/charts/advanced/external-object-storage/ 
   lfsObjects:
     enabled: true
     bucketName: lfs-objects
@@ -127,10 +153,7 @@ gitlab:
         secretName: *registry_tls
   resources:
     requests:
-      cpu: 1500m
-      memory: 10Gi
-    limits:
-      cpu: 1500m
+      cpu: 2000m
       memory: 10Gi
   redis:
     master:
@@ -173,7 +196,7 @@ keycloak:
 postgresql:
   postgresPassword: *postgresql_postgresPassword
   persistence:
-    existingClaim: renku-postgresql
+    existingClaim: renku-postgresql ## Alternatively, replace with the PVC name
   resources:
     requests:
       cpu: 1000m
@@ -213,8 +236,11 @@ ui:
       We also kindly request that you do not upload datasets larger than 1GB for
       the time being. In the future, we will remove this restriction.
 
-      ### Renku version 0.3.1 (March 11th 2019)
-      
+      ### Renku version 0.x.y
+
+      See the [Release Notes](https://github.com/SwissDataScienceCenter/renku/releases/tag/0.x.y)
+      for more information on latest changes and improvements.
+
   resources:
     <<: *defaultResources
 
@@ -242,6 +268,8 @@ notebooks:
       host: *registryName
       ## Set the registry secret key
       secret: renku-notebooks-registry
+      username: root
+      token: *gitlab_root_registry_token
   resources:
     <<: *defaultResources
   jupyterhub:
@@ -284,9 +312,38 @@ notebooks:
         enabled: true
         cryptoKey: *nb_jupyterhub_auth_state_cryptoKey
       gitlab:
+        clientId: *nb_jupyterhub_auth_gitlab_clientId
         clientSecret: *nb_jupyterhub_auth_gitlab_clientSecret
+        callbackUrl: *jupyterhub_gitlab_callbackUrl
 
+graph:
+  enabled: true
+  jena:
+    users:
+      admin:
+        password: *graph_jena_admin_password
+      renku:
+        password: *graph_sparql_password
+    persistence:
+      existingClaim: renku-jena ## Alternatively, replace with the PVC name
+  gitlab:
+    url: *gitlabURL
+  webhookService:
+    hookToken:
+      secret: *graph_webhook_service_secret
+    eventsSynchronization:
+      initialDelay: 2 minutes
+      interval: 30 minutes
+  tokenRepository:
+    tokenEncryption:
+      secret: *graph_token_repository_secret
 gateway:
+  graph:
+    sparql:
+      username: renku
+      password: *graph_sparql_password
+  keycloakUrl: *keycloakURL
+  gitlabUrl: *gitlabURL
   jupyterhub:
     clientId: *gatewayClient
     clientSecret: *nb_jupyterhub_hub_services_gateway_apiToken
@@ -311,9 +368,9 @@ tests:
      firstName: Bruce
      lastName: Wayne
      email: bwayne@example.com
-     password: ## ReplaceMewithA32charString
+     password: ## Replace with a 64 CharString e.g. openssl rand -hex 32
    - username: ckent
      firstName: Clark
      lastName: Kent
      email: ckent@example.com
-     password: ## ReplaceMewithA32charString
+     password: ## Replace with a 64 CharString e.g. openssl rand -hex 32
