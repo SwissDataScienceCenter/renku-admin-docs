@@ -1,0 +1,126 @@
+#
+# Configuration file for deploying the renku chart on GKE
+#
+
+---
+variables_switchboard:
+  mainURL:                   &mainURL                       gcp-renku.get-renga.io
+  ingressTLS:                &ingressTLS                    gcp-renku-get-renga-io-tls
+  gitlabURL:                 &gitlabURL                     https://gcp-renku.get-renga.io/gitlab
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: 'nginx'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'false'
+    nginx.ingress.kubernetes.io/proxy-body-size: '0' # Adjust to a reasonable value for production to avoid DOS attacks.
+    nginx.ingress.kubernetes.io/proxy-request-buffering: 'off' # Needed if GitLab is behind this ingress
+    cert-manager.io/cluster-issuer: letsencrypt-production
+  hosts:
+  - *mainURL
+  tls:
+  - hosts:
+    - *mainURL
+    secretName: *ingressTLS
+global:
+  useHTTPS: true
+  gitlab:
+    clientSecret: {global_gitlab_clientSecret}
+    urlPrefix: /gitlab
+  gateway:
+    clientSecret: {global_gateway_clientSecret}
+    gitlabClientSecret: {global_gateway_gitlabClientSecret}
+  renku:
+    version: 'latest'
+
+keycloak:
+  createDemoUser: true
+  keycloak:
+    username: admin
+
+
+gitlab:
+  oauth:
+    autoSignIn: true
+  ssh:
+    externalPort: 30022
+    nodePortService:
+      enabled: true
+      nodePort: 30022
+  registry:
+    enabled: true
+    exposedAs: NodePort
+  sharedRunnersRegistrationToken: {gitlab_sharedRunnersRegistrationToken}
+  demoUserIsAdmin: true
+
+notebooks:
+  securityContext:
+    enabled: false
+  jupyterhub:
+    rbac:
+      enabled: true
+    hub:
+      cookieSecret: {nb_jupyterhub_hub_cookieSecret}
+      baseUrl: '/jupyterhub/'
+      db:
+        type: postgres
+        url: postgres+psycopg2://jupyterhub@renku-postgresql:5432/jupyterhub
+      services:
+        notebooks:
+          apiToken: {nb_jupyterhub_hub_services_notebooks_apiToken}
+        gateway:
+          admin: true
+          oauth_client_id: &gatewayClient gateway
+          apiToken: &gatewaySecret {nb_jupyterhub_hub_services_gateway_apiToken}
+      extraEnv:
+        - name: GITLAB_URL
+          value: *gitlabURL
+        - name: DEBUG
+          value: "1"
+        - name: JUPYTERHUB_SPAWNER_CLASS
+          value: spawners.RenkuKubeSpawner
+        - name: PGPASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: renku-jupyterhub-postgres
+                key: jupyterhub-postgres-password
+    proxy:
+      secretToken: {nb_jupyterhub_proxy_secretToken}
+    auth:
+      state:
+        enabled: true
+        cryptoKey: {nb_jupyterhub_auth_state_cryptoKey}
+      type: gitlab
+      gitlab:
+        clientId: jupyterhub
+        clientSecret: {nb_jupyterhub_auth_gitlab_clientSecret}
+
+runner:
+  enabled: true
+
+graph:
+  jena:
+    users:
+      admin:
+        password: {graph_jena_admin_password}
+      renku:
+        password: &sparql-password {graph_sparql_password}
+  gitlab:
+    url: *gitlabURL
+  webhookService:
+    hookToken:
+      secret: {graph_webhook_service_secret}
+  tokenRepository:
+    tokenEncryption:
+      secret: {graph_token_repository_secret}
+
+gateway:
+  development: true
+  secretKey: {gateway_secretKey}
+  jupyterhub:
+    clientId: *gatewayClient
+    clientSecret: *gatewaySecret
+  graph:
+    sparql:
+      username: admin
+      password: *sparql-password
