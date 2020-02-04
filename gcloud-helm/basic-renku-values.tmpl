@@ -4,9 +4,13 @@
 
 ---
 variables_switchboard:
-  mainURL:                   &mainURL                       gcp-renku.get-renga.io
-  ingressTLS:                &ingressTLS                    gcp-renku-get-renga-io-tls
-  gitlabURL:                 &gitlabURL                     https://gcp-renku.get-renga.io/gitlab
+  mainURL:                   &mainURL                       [domain]
+  gitlabURL:                 &gitlabURL                     https://[domain]/gitlab
+  jupyterhubURL:             &jupyterhubURL                 https://[domain]/jupyterhub
+  gatewayURL:                &gatewayURL                    https://[domain]/api
+  jupyterhubAuthCallbackUrl: &jupyterhub_gitlab_callbackUrl https://[domain]/jupyterhub/hub/oauth_callback
+  oauth_redirect_uri:        &oauth_redirect_uri            https://[domain]/api/auth/jupyterhub/token
+  ingressTLS:                &ingressTLS                    [ingress-tls]
 
 ingress:
   enabled: true
@@ -31,7 +35,7 @@ global:
     clientSecret: {global_gateway_clientSecret}
     gitlabClientSecret: {global_gateway_gitlabClientSecret}
   renku:
-    version: 'latest'
+    domain: *mainURL
 
 keycloak:
   createDemoUser: true
@@ -53,6 +57,10 @@ gitlab:
   sharedRunnersRegistrationToken: {gitlab_sharedRunnersRegistrationToken}
   demoUserIsAdmin: true
 
+ui:
+  gatewayUrl: *gatewayURL
+  jupyterhubUrl: *jupyterhubURL
+
 notebooks:
   securityContext:
     enabled: false
@@ -72,6 +80,7 @@ notebooks:
           admin: true
           oauth_client_id: &gatewayClient gateway
           apiToken: &gatewaySecret {nb_jupyterhub_hub_services_gateway_apiToken}
+          oauth_redirect_uri: *oauth_redirect_uri
       extraEnv:
         - name: GITLAB_URL
           value: *gitlabURL
@@ -90,10 +99,9 @@ notebooks:
       state:
         enabled: true
         cryptoKey: {nb_jupyterhub_auth_state_cryptoKey}
-      type: gitlab
       gitlab:
-        clientId: jupyterhub
         clientSecret: {nb_jupyterhub_auth_gitlab_clientSecret}
+        callbackUrl: *jupyterhub_gitlab_callbackUrl
 
 runner:
   enabled: true
