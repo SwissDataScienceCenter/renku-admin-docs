@@ -19,14 +19,15 @@ if [[ $CLUSTERS != *$CLUSTER_NAME* ]]; then
 fi
 
 echo "*** Checking if helm is installed"
-CHECK=`helm version`
-if [[ $CHECK == *"Error: could not find tiller"* ]]; then
+
+CHECK=`helm version | tail -1`
+if [[ $CHECK != *"Server:"* ]]; then
   # deploy tiller
-  echo "*** Deploying tiller"
+  echo "*** Tiller not found, deploying helm in the server"
   kubectl apply -f helm-installs/tiller-rbac-config.yaml
   helm init --override 'spec.template.spec.containers[0].command'='{/tiller,--storage=secret,--listen=localhost:44134}' --service-account tiller --upgrade
-  CHECK=`helm version`
-  while [[ $CHECK == *"Error"* ]]; do
+  CHECK=`helm version | tail -1`
+  while [[ $CHECK != *"Server:"*  ]]; do
     echo "*** Waiting for Tiller to be initialized"
     sleep 5
     CHECK=`helm version`
@@ -59,9 +60,10 @@ if [[ -z $CHECK ]]; then
   kubectl create namespace nginx-ingress
   helm install --name nginx-ingress stable/nginx-ingress --namespace nginx-ingress --version 1.29.3 --set rbac.create=true --set controller.publishService.enabled=true
   echo "*** Waiting for nginx-ingress to be initialized and an external IP to be assigned"
+  sleep 10
   IP=`kubectl get service nginx-ingress-controller -n nginx-ingress | awk '{print $4}' | tail -1`
-  while [[ -z "$IP" ]]; do ## TODO THIS IS NOT WORKING
-    sleep 20
+  while [[  -z $IP || $IP == *"pending"* ]]; do
+    sleep 10
     IP=`kubectl get service nginx-ingress-controller -n nginx-ingress | awk '{print $4}' | tail -1`
   done
 else
@@ -76,7 +78,7 @@ read -ep 'Domain: ' DOMAIN
 #DOMAIN="gcp-renku.get-renga.io"
 #INGRESSTLS="gcp-renku-get-renga-io-tls"
 
-INGRESSTLS=`echo $DOMAIN | tr . -`
+INGRESSTLS=`echo ${DOMAIN}-tls | tr . -`
 echo "*** Going to use $DOMAIN for Renku configuration and $INGRESSTLS for the Renku ingress."
 
 # deploy renku
@@ -90,14 +92,3 @@ helm upgrade --install  renku renku/renku --namespace renku --version 0.5.2 \
  --timeout 1800 --cleanup-on-fail
 
 echo "*** Congrats! Renku is deployed. To get the keycloak admin password run: kubectl get secrets -n renku keycloak-password-secret -ojsonpath=\"{.data.keycloak-password}\" | base64 --decode"
-exit
-
-# old complete command used
-helm upgrade --install  renku renku/renku --namespace renku --version 0.5.2 \
-  -f basic-renku-values.yaml -f renkulab-gitlab.yaml \
-  --set global.renku.domain="${DOMAIN}"  \
-  --set ui.jupyterhubUrl=https://${DOMAIN}/jupyterhub --set ui.gatewayUrl=https://${DOMAIN}/api  \
-  --set gateway.keycloakUrl=https://${DOMAIN} \
-  --set notebooks.jupyterhub.hub.services.gateway.oauth_redirect_uri=https://${DOMAIN}/api/auth/jupyterhub/token  \
-  --set notebooks.jupyterhub.auth.gitlab.callbackUrl=https://${DOMAIN}/jupyterhub/hub/oauth_callback \
-  --timeout 1800 --cleanup-on-fail
