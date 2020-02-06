@@ -29,10 +29,10 @@ if [[ $CHECK != *"Server:"* ]]; then
   CHECK=`helm version | tail -1`
   while [[ $CHECK != *"Server:"*  ]]; do
     echo "*** Waiting for Tiller to be initialized"
-    sleep 5
+    sleep 10
     CHECK=`helm version`
   done
-  echo "*** Tiller initialized $CHECK"
+  echo "*** Tiller initialized \n $CHECK"
 fi
 
 echo "*** Checking if letsencrypt is installed"
@@ -47,9 +47,17 @@ if [[ -z $CHECK ]]; then
   helm repo update
   helm install --name cert-manager --namespace cert-manager jetstack/cert-manager  --version 0.12.0 -f helm-installs/cert-manager-values.yaml
   sleep 10
+  CHECK=`kubectl get po -n cert-manager | awk '{print $3}' | tail -3 | grep "Running" | wc -l`
+  while [[  $CHECK != "3" ]]; do
+    echo "*** Waiting for letsencrypt to be initialized"
+    sleep 10
+    CHECK=`kubectl get po -n cert-manager | awk '{print $3}' | tail -3 | grep "Running" | wc -l`
+  done
   echo "*** Creating a cluster issuer"
   kubectl apply -f helm-installs/cert-manager-issuer.yaml
   kubectl get clusterissuer.cert-manager.io
+  CHECK=`kubectl get ClusterIssuer`
+  echo "*** Cluster issuer created\n $CHECK"
 fi
 
 echo "*** Checking if nginx-ingress is installed"
@@ -91,4 +99,12 @@ helm upgrade --install  renku renku/renku --namespace renku --version 0.5.2 \
  -f renku-values.yaml -f renkulab-gitlab.yaml \
  --timeout 1800 --cleanup-on-fail
 
-echo "*** Congrats! Renku is deployed. To get the keycloak admin password run: kubectl get secrets -n renku keycloak-password-secret -ojsonpath=\"{.data.keycloak-password}\" | base64 --decode"
+CHECK=`helm list renku`
+if [[ -n $CHECK && $CHECK != *"FAILED"* ]]; then
+   echo "*** Congrats! Renku is deployed. To get the keycloak admin password run: kubectl get secrets -n renku keycloak-password-secret -ojsonpath=\"{.data.keycloak-password}\" | base64 --decode"
+else
+  echo "*** Renku could not be deployed, please check the error and re run : \n
+  helm upgrade --install  renku renku/renku --namespace renku --version 0.5.2 \
+   -f renku-values.yaml -f renkulab-gitlab.yaml \
+   --timeout 1800 --cleanup-on-fail"
+fi
