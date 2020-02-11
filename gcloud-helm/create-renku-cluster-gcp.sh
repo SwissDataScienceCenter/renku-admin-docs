@@ -50,14 +50,15 @@ if [[ -z $CHECK ]]; then
   CHECK=`kubectl get po -n cert-manager | awk '{print $3}' | tail -3 | grep "Running" | wc -l`
   while [[  $CHECK != "3" ]]; do
     echo "*** Waiting for letsencrypt to be initialized"
+    echo "$CHECK pods ready out of 3"
     sleep 10
     CHECK=`kubectl get po -n cert-manager | awk '{print $3}' | tail -3 | grep "Running" | wc -l`
   done
+  sleep 10 ## Even after the pods are running there's some delay needed before creating the ClusterIssuer
   echo "*** Creating a cluster issuer"
   kubectl apply -f helm-installs/cert-manager-issuer.yaml
-  kubectl get clusterissuer.cert-manager.io
-  CHECK=`kubectl get ClusterIssuer`
-  echo "*** Cluster issuer created\n $CHECK"
+  echo "*** Cluster issuer created"
+  kubectl get ClusterIssuer
 fi
 
 echo "*** Checking if nginx-ingress is installed"
