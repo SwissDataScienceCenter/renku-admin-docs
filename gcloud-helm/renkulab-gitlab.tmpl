@@ -1,0 +1,46 @@
+# Configuration file for deploying the renku chart on minikube
+# against the gitlab of another Renku deployment. We also need to configure the keycloak instance which is part
+# of Renku to use Renku deployment as identity provider. See the developer docs
+# (https://renku.readthedocs.io/en/latest/developer/example-configurations/renkulab.html)
+# for instructions on how to use this values file.
+
+variables:
+  gitlabURL:          &renkuGitlabURL      https://renkulab.io/gitlab
+  # gcp-renku
+  gitlabClientId:     &gitlabClientId      {gitlab_client_id}
+  gitlabClientSecret: &gitlabClientSecret  {gitlab_client_secret}
+  gitlabRegistryHost: &gitlabRegistryHost  registry.renkulab.io
+
+gitlab:
+  enabled: false
+
+notebooks:
+  gitlab:
+    url: *renkuGitlabURL
+    registry:
+      host: *gitlabRegistryHost
+  jupyterhub:
+    hub:
+      extraEnv:
+        - name: GITLAB_URL
+          value: *renkuGitlabURL
+        - name: JUPYTERHUB_SPAWNER_CLASS
+          value: spawners.RenkuKubeSpawner
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: renku-jupyterhub-postgres
+              key: jupyterhub-postgres-password
+    auth:
+      gitlab:
+        clientId: *gitlabClientId
+        clientSecret: *gitlabClientSecret
+
+graph:
+  gitlab:
+    url: *renkuGitlabURL
+
+gateway:
+  gitlabUrl: *renkuGitlabURL
+  gitlabClientId: *gitlabClientId
+  gitlabClientSecret: *gitlabClientSecret

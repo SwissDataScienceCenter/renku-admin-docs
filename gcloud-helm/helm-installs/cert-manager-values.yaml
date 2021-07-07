@@ -1,0 +1,5 @@
+createCustomResource: true
+ingressShim:
+  enabled: false
+rbac:
+  enabled: true
